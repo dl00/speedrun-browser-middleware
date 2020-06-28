@@ -1,0 +1,17 @@
+{{- if .Values.ingress.tlsEnabled -}}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ include "helpers.build-name" (merge (dict "name" "") .) }}
+spec:
+  secretName: {{ include "helpers.build-name" (merge (dict "name" "certs") .) }}
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: {{ index .Values.ingress.hosts 0 }}
+  dnsNames: {{ toYaml .Values.ingress.hosts | nindent 2 }}
+  acme:
+    config:
+    - http01: {}
+      domains: {{ toYaml .Values.ingress.hosts | nindent 6 }}
+{{- end }}

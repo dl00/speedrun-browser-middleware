@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "outDir": "dist",
+        "module": "commonjs",
+        "declaration": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "removeComments": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "inlineSources": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "types": ["node"]
+    }
+}

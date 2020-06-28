@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "helpers.build-name" (merge (dict "name" "test-connection") .) }}"
+  labels: {{ include "helpers.labels" (merge (dict "name" "test-connection") .) | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['{{ include "helpers.build-name" (merge (dict "name" "middleware") .) }}:{{ .Values.service.port }}']
+  restartPolicy: Never

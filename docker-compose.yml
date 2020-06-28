@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  web:
+    image: node:12
+    ports:
+    - "3500:3500"
+    volumes:
+    - .:/app
+    environment:
+      DEBUG: sched
+    network_mode: host
+    working_dir: /app
+    depends_on:
+    - redis
+    - mongo
+  redis:
+    image: "redislabs/redisjson2:0.9.1"
+    volumes:
+    - /var/lib/sr-browser/redis:/data
+    network_mode: host
+    deploy:
+      restart_policy:
+        condition: always
+        delay: 5s
+        max_attempts: 10
+        window: 120s
+  mongo:
+    image: "mongo:4.0.9-xenial"
+    command: --wiredTigerCacheSizeGB 0.5
+    volumes:
+    - /var/lib/sr-browser/mongo:/data/db
+    network_mode: host
+    deploy:
+      restart_policy:
+        condition: always
+        delay: 5s
+        max_attempts: 10
+        window: 120s

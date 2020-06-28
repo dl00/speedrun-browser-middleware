@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "helpers.build-name" (merge (dict "name" "mongo-data") .) }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 40Gi
+  storageClassName: "{{ .Values.pvcs.mongo.storageClassName }}"

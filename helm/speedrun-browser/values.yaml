@@ -1,0 +1,77 @@
+# Default values for Speedrun Browser Middleware.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# number of instances of the app to run. right now this includes both the API and spider
+replicaCount: 1
+
+# name used to prefix resources, uses helm release name by default
+stack: null
+
+# info for the images used in this chart
+images:
+  middleware:
+    repository: dcr.buyme360.com/beald/speedrun-browser
+    tag: master
+    pullPolicy: Always
+  mongo:
+    repository: mongo
+    tag: 4-xenial
+    pullPolicy: IfNotPresent
+  redis:
+    repository: redis
+    tag: '5'
+    pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+middlewareSecretName: speedrun-browser-secrets
+
+# config document as seen by the app. will be converted to JSON when deployed
+middlewareConfig:
+  stackName: 'debug'
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  tlsEnabled: false
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+  - sr-browser.dbeal.dev
+
+resources:
+  middleware:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+  mongo:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 1Gi
+  redis:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 2048Mi
+
+pvcs:
+  mongo:
+    storageClassName: default
+  redis:
+    storageClassName: default
+
+nodeSelector: {}
+tolerations: {}
+affinity: {}

@@ -1,0 +1,22 @@
+{{ if .Values.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "helpers.build-name" (merge (dict "name" "") .) }}
+spec:
+{{- if .Values.ingress.tlsEnabled }}
+  tls:
+  - hosts: {{ toYaml .Values.ingress.hosts | nindent 6 }}
+    secretName: {{ include "helpers.build-name" (merge (dict "name" "certs") .) }}
+{{- end }}
+  rules:
+{{- range $host := .Values.ingress.hosts }}
+  - host: {{ $host }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ include "helpers.build-name" (merge (dict "name" "middleware") $) }}
+          servicePort: {{ $.Values.service.port }}
+{{- end }}
+{{- end -}}
