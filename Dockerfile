@@ -1,14 +1,28 @@
-FROM node:10-alpine
+FROM node:12-alpine AS build
+
+RUN apk add --no-cache git
+
+WORKDIR /build
+
+COPY ./package.json ./package-lock.json ./
+
+RUN npm ci
+
+COPY ./ ./
+
+RUN npx tsc
+
+RUN npm prune --production
+
+FROM node:12-alpine
 
 RUN apk add --no-cache git tini curl # curl needed for healthcheck
 
 WORKDIR /usr/src
 
-COPY package.json package-lock.json ./
+COPY --from=build /build/dist ./
 
-RUN npm i -production
-
-COPY ./dist ./
+COPY --from=build /build ./
 
 EXPOSE 3500
 
