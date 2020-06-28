@@ -18,6 +18,10 @@ This tool was originally designed for my [Speedrun Browser for Android](https://
 
 ## Usage
 
+### TL;DR
+
+With [Docker Compose](https://docs.docker.com/compose/): `docker-compose up`
+
 ### Requirements
 
 In order to record data from Speedrun.com, some extra tools are required:
