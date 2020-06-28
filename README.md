@@ -58,3 +58,7 @@ Access the generated API at `http://localhost:3500`
 A helm chart which includes a MongoDB and Redis is provided in the repository.
 
 Instructions on how to use TBC.
+
+#### Configuration
+
+For any of the above options, many custom configuration options are supported. A full documented list is avilable in the source code [`lib/config.ts`](https://github.com/dl00/speedrun-browser-middleware/blob/main/lib/config.ts#L9)

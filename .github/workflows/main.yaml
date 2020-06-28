@@ -1,0 +1,55 @@
+name: Main Workflow
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:4.4
+        ports:
+        - 27017:27017
+      redis:
+        image: redis:5
+        ports:
+        - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Dep Cache
+      id: deps
+      uses: actions/cache@v1
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-deps
+    - run: npm i
+    - run: npx mocha --exit -r ts-node/register /app/test/**/*.ts
+
+  package:
+    name: Build Docker
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Set Environment
+      run: echo "::set-env name=TAG::$(printf "%06d" $GITHUB_RUN_NUMBER)-$(git rev-parse HEAD)"
+    - name: Build Docker
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dcr.dbeal.dev/beald/speedrun-browser
+        registry: dcr.dbeal.dev
+        username: beald
+        password: ${{ secrets.DOCKER_TOKEN }}
+        tags: "latest,${{ env.TAG }}"
