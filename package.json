@@ -42,7 +42,7 @@
     "@types/p-map": "^2.0.0",
     "@types/p-timeout": "^1.2.2",
     "chai": "^4.2.0",
-    "mocha": "^5.2.0",
+    "mocha": "^8.0.1",
     "ts-node": "^8.6.1",
     "typescript": "^3.7.4"
   }

@@ -118,7 +118,7 @@ describe('Sched', () => {
     // the job should run to completion if we call in repeat mode
     await sched.loop(true);
 
-    await sleep(5);
+    await sleep(10);
 
     expect(taskCalled).to.eql(2);
   });
