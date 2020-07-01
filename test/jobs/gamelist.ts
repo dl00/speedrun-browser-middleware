@@ -21,7 +21,7 @@ describe('jobs/gamelist', () => {
     'weblink': 'https://speedrun.com/agame',
     'platforms': [],
     'regions': [],
-    'genres': [],
+    'genres': {data: [{id: 'asdf', name: 'asdf'}]},
     'released': 2019,
     'developers': [],
     'publishers': [],

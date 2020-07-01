@@ -15,7 +15,7 @@ services:
     - redis
     - mongo
   redis:
-    image: "redislabs/redisjson2:0.9.1"
+    image: "redis:5"
     volumes:
     - /var/lib/sr-browser/redis:/data
     network_mode: host

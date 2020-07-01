@@ -441,7 +441,7 @@ export class Sched extends EventEmitter {
   
   /** perform a single iteration of executing jobs. may spawn tasks which continue in the background. */
   async loop(repeat = false) {
-    debug('enter loop');
+    debugInfo('enter loop');
 
     try {
   
@@ -450,7 +450,8 @@ export class Sched extends EventEmitter {
       const now = Date.now();
       let nextEvent = 10000;
   
-      const doneJobs: GenericJob[] = [];
+      // to prevent livelocking by a single job which completes too quickly
+      const doneJobs = new Set<string>();
   
       for(const name in resources) {
         debug(`check resource: ${name}`);
@@ -466,6 +467,9 @@ export class Sched extends EventEmitter {
           let jobNextEvent = 10000;
   
           for(const j of jobQueue) {
+            if (doneJobs.has(j))
+              continue;
+
             // try to start the job
             const jobStatus = await this.mark_job_exec_start(j, now);
             
@@ -483,7 +487,7 @@ export class Sched extends EventEmitter {
           }
           else {
             debugInfo(`do job: ${doJob.name} (cur ${doJob.cur?.pos})`);
-            doneJobs.push(doJob);
+            doneJobs.add(doJob.name);
             
             // do this job
             (async () => {
@@ -498,9 +502,9 @@ export class Sched extends EventEmitter {
                   await this.clear_job(doJob);
                   // if there is a problem processing the last segment, it will be reflected in the rejected segments
                 }
-                else {
+                else if(repeat) {
                   // may be able to use the new cursor now
-                  this.loop().then(_.noop);
+                  this.reset_loop(0);
                 }
   
                 if (newCur) {
@@ -515,7 +519,9 @@ export class Sched extends EventEmitter {
                     await this.mark_job_exec_finish(doJob, doJob.cur);
 
                     // trigger an immediately loop since this job may be able to run again
-                    this.loop().then(_.noop);
+                    if(repeat) {
+                      this.reset_loop(0);
+                    }
 
                   } catch(err) {
                     debugInfo(`job seg task fail (dead): ${doJob.name}: %O`, err);
@@ -540,15 +546,33 @@ export class Sched extends EventEmitter {
   
       if(repeat) {
         debugInfo(`next event in ${nextEvent}`);
-        this.loopPending = setTimeout(_.bind(this.loop, this, true), nextEvent);
+
+        this.reset_loop(nextEvent);
       }
   
     } catch(err) {
       console.error('problem in sched:', err);
   
-      if(repeat)
-        this.loopPending = setTimeout(_.bind(this.loop, this, true), 1000);
+      if(repeat) {
+        this.reset_loop(1000);
+      }
     }
+  }
+
+  // completely kills any repeat of the main loop
+  cancel_loop() {
+    if(this.loopPending)
+      clearTimeout(this.loopPending);
+  }
+
+  // resets the loop to be called in the requested number of ticks
+  reset_loop(tick: number) {
+    this.cancel_loop();
+    
+    if(tick)
+      this.loopPending = setTimeout(_.bind(this.loop, this, true), tick);
+    else
+      this.loop(true);
   }
   
   async init() {

@@ -53,6 +53,7 @@ export const SCHED_TEST_CONFIG: SchedConfig = {
   }
 }
 
+// Many of these tests depend on time based constraints which makes for great false negatives. This should be fixed.
 describe('Sched', () => {
   var schedDb: DB;
   var sched: Sched;
@@ -111,7 +112,15 @@ describe('Sched', () => {
     expect(taskCalled).to.eql(2);
 
     // make sure we can add the job again now
+    taskCalled = 0;
     await sched.push_job(job);
+
+    // the job should run to completion if we call in repeat mode
+    await sched.loop(true);
+
+    await sleep(5);
+
+    expect(taskCalled).to.eql(2);
   });
 
   it('should schedule jobs', async () => {
@@ -125,6 +134,8 @@ describe('Sched', () => {
             resources: ['fast'],
             generator: 'test',
             task: 'test',
+            args: [],
+            blockedBy: [],
             timeout: 10
           }
         }

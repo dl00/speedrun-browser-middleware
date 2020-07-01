@@ -86,12 +86,12 @@ export async function apply_games(sched: Sched, cur: CursorData<SRCGame>) {
     for(const g of cur.items) {
         categories.push(...g.categories.data.map(c => {
             c.game = g.id;
-            c.variables = (<any>c.variables).data;
+            c.variables = _.get(c, 'variables.data');
             return c;
         }));
         levels.push(...g.levels.data.map(l => {
             l.game = g.id;
-            l.variables = (<any>l.variables).data;
+            l.variables = _.get(l, 'variables.data');
             return l;
         }));
 

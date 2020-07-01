@@ -342,6 +342,7 @@ describe('RecordChartIndex', () => {
 
         await new CategoryDao(db).save({
             id: 'variabledSubcategory',
+            game: 'a_game',
             name: 'Testing',
             type: 'per-game',
             weblink: '',
