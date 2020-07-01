@@ -31,8 +31,7 @@ spec:
         volumeMounts:
         - name: mongo-data
           mountPath: /data/db
-        resources:
-      resources: {{ toYaml .Values.resources.redis | nindent 10 }}
+        resources: {{ toYaml .Values.resources.redis | nindent 10 }}
 {{- with .Values.nodeSelector.redis }}
       nodeSelector: {{- toYaml . | nindent 8 }}
 {{- end }}

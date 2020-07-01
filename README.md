@@ -1,6 +1,9 @@
 Speedrun.com API Middleware
 ====
 
+![Main Workflow](https://github.com/dl00/speedrun-browser-middleware/workflows/Main%20Workflow/badge.svg?event=push)
+[![GitHub license](https://img.shields.io/github/license/dl00/speedrun-browser-middleware.svg)](https://github.com/dl00/speedrun-browser-middleware/blob/master/LICENSE)
+
 This repository provides a tool to (conceptually) clone the `games`, `categories`, `levels`, `variables`, `players`, `runs`, and `leaderboards` endpoints. It maintains a running tail in order to keep database up to date. Additionally, it downloads Twitch streams from active speedrunners.
 
 Goals for this project:
@@ -55,9 +58,15 @@ Access the generated API at `http://localhost:3500`
 
 #### Helm
 
-A helm chart which includes a MongoDB and Redis is provided in the repository.
+A [Helm]() chart which includes a regular MongoDB and Redis is provided in the repository.
 
-Instructions on how to use TBC.
+There is no official Helm package deployment at this time. To use, clone this repo and run the following command:
+
+```
+helm upgrade --install speedrun-browser ./helm/full
+```
+
+For more information and available configured values, checkout the [`helm/full/values.yaml`](https://github.com/dl00/speedrun-browser-middleware/blob/main/helm/speedrun-browser/values.yaml) file.
 
 #### Configuration
 
