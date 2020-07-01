@@ -20,7 +20,7 @@ data:
   config.json: >
     {{ toJson (merge (dict "db" (dict "mongo" (dict "uri" (printf "mongodb://%s:27017" (include "helpers.build-name" (merge (dict "name" "mongo") .)))) "redis" (dict "host" (include "helpers.build-name" (merge (dict "name" "redis") .))))) .Values.middlewareConfig) }}
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "helpers.build-name" (merge (dict "name" "middleware") .) }}
