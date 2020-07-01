@@ -11,8 +11,8 @@ stack: null
 # info for the images used in this chart
 images:
   middleware:
-    repository: dcr.buyme360.com/beald/speedrun-browser
-    tag: master
+    repository: dcr.dbeal.dev/beald/speedrun-browser
+    tag: latest
     pullPolicy: Always
   mongo:
     repository: mongo

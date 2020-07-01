@@ -41,6 +41,9 @@ spec:
         imagePullPolicy: Always
         tty: true
         stdin: true
+        env:
+        - name: DEBUG
+          value: sched
         volumeMounts:
         - name: config
           mountPath: /speedrunbrowser-middleware/config
