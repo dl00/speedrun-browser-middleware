@@ -4,6 +4,7 @@
   "description": "Middleware for a Speedrun.com smartphone client to categorize and crawl data",
   "main": "index.js",
   "scripts": {
+    "lint": "npx eslint .",
     "test": "docker-compose run web /app/node_modules/.bin/mocha --exit -r ts-node/register /app/test/**/*.ts"
   },
   "repository": {

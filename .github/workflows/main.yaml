@@ -36,9 +36,9 @@ jobs:
         path: node_modules
         key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-deps
     - name: Deps
-      run: npm i
+      run: npm ci
     - name: Lints
-      run: npm lint
+      run: npm run lint
     - name: Tests
       run: npx mocha --exit -r ts-node/register test/**/*.ts
 
