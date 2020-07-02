@@ -85,20 +85,18 @@ export async function apply_games(sched: Sched, cur: CursorData<SRCGame>) {
     const gameGroups: GameGroup[] = [];
 
     for(const g of cur.items) {
-        categories.push(...g.categories.data.map(c => {
+        categories.push(...g.categories.data.map((c, i) => {
             c.game = g.id;
             c.variables = _.get(c, 'variables.data');
+            c.pos = i;
             return c;
         }));
-        levels.push(...g.levels.data.map(l => {
+        levels.push(...g.levels.data.map((l, i) => {
             l.game = g.id;
             l.variables = _.get(l, 'variables.data');
+            l.pos = i;
             return l;
         }));
-
-        // to preserve order of categories, levels...
-        (<any>g).categories = _.map(g.categories.data, 'id');
-        (<any>g).levels = _.map(g.levels.data, 'id');
 
         for(const groupable of ['genres', 'platforms', 'developers', 'publishers']) {
             const ggg: GameGroup[] = (g as { [key: string]: any })[groupable].data;

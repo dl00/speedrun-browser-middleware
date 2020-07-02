@@ -17,7 +17,8 @@ export interface BulkLevel {
 }
 
 export interface Level extends BulkLevel, BaseMiddleware {
-    variables: Variable[]
+    variables: Variable[];
+    pos: number;
 }
 
 export function level_to_bulk(level: Level): BulkLevel {
