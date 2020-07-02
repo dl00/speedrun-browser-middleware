@@ -1,3 +1,5 @@
+/* eslint no-console: "off" */
+
 import * as _ from 'lodash';
 
 import { load_config } from './lib/config';
@@ -30,7 +32,7 @@ const OVERRIDE_SCHED_CONFIG = {
     generators: make_generators(),
 
     tasks: make_tasks()
-}
+};
 
 export async function start_sched(config: any) {
     const sched = new Sched(_.merge(OVERRIDE_SCHED_CONFIG, config.sched), await load_db(config.db));
@@ -38,7 +40,7 @@ export async function start_sched(config: any) {
     await sched.init();
 
     if (!await sched.has_job('init_games')) {
-        console.log('has job push job')
+        console.log('has job push job');
         // add required initialization job (will block other jobs)
         await sched.push_job({
             name: 'init_games',

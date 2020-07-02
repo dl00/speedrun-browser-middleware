@@ -188,9 +188,9 @@ describe('IndexerIndex', () => {
 
     it('should recognize changes to any index field', async () => {
         await ao.save({
-                id: 'weeboo',
-                test: 'the legend of zelda wind waker galaxy',
-                score: 10000,
+            id: 'weeboo',
+            test: 'the legend of zelda wind waker galaxy',
+            score: 10000,
         });
 
         const items = await ao.load_by_index('autocomplete', 'galaxy');

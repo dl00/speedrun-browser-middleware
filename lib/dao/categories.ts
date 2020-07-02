@@ -69,28 +69,28 @@ export function standard_sort_categories(categories: Category[]) {
         }
         else if (name.match(/^all.*/)) {
             score = 1;
- }
+        }
         else if (name === 'low%') {
             score = 2;
- }
+        }
         else if (name === '100%') {
             score = 3;
- }
+        }
         else if (name.match(/^any%/)) {
             score = 4;
- }
+        }
         else if (name.match(/^100%/)) {
             score = 5;
- }
+        }
         else if (name.match(/%$/)) {
             score = 6;
- }
+        }
         else if (name.match(/^\d+.*/)) {
             score = 1 + parseInt(name.match(/^(\d+).*/)![1]) / 1000000;
- }
+        }
         else {
             score = 7;
- }
+        }
 
         if (c.type !== 'per-game') {
             score += 100;

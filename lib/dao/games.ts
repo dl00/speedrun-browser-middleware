@@ -126,24 +126,24 @@ export function normalize_game(d: Game) {
 
 export function extract_game_group_ids(d: Game): string[] {
     // TODO: switch to `speedrun_api.Genre[] instead of any[]`
-    const groups: string[] = []
+    const groups: string[] = [];
     for (const genre of d.genres as {id: string, name: string}[]) {
         groups.push(genre.id || <any>genre);
     }
 
     for (const platform of d.platforms as Platform[]) {
-        groups.push(platform.id || <any>platform)
+        groups.push(platform.id || <any>platform);
     }
 
     for (const developer of d.developers as Developer[]) {
-        groups.push(developer.id || <any>developer)
+        groups.push(developer.id || <any>developer);
     }
 
     for (const publisher of d.publishers as Publisher[]) {
         groups.push(publisher.id || <any>publisher);
     }
 
-    return groups
+    return groups;
 }
 
 class PopularGamesIndex implements IndexDriver<Game> {
@@ -189,7 +189,7 @@ class PopularGamesIndex implements IndexDriver<Game> {
 
             // install on game group lists
             for(const gg of extract_game_group_ids(game)) {
-                m.zadd(this.name + ':' + gg, game_score.toString(), game.id)
+                m.zadd(this.name + ':' + gg, game_score.toString(), game.id);
             }
         }
 
@@ -263,7 +263,7 @@ export class GameDao extends Dao<Game> {
 
         this.id_key = _.property('id');
 
-        let max_items = (options && options.max_items) ? options.max_items : 100;
+        const max_items = (options && options.max_items) ? options.max_items : 100;
 
         this.game_score_time_now = options && options.game_score_time_now ? options.game_score_time_now : moment(new Date());
         this.game_score_leaderboard_updated_cutoff = moment(this.game_score_time_now).subtract(3, 'months');
@@ -277,7 +277,7 @@ export class GameDao extends Dao<Game> {
             new PopularGamesIndex('popular_trending_games', max_items,
                 (g) => {
                     return (g.score || 0) /
-                        Math.max(49, Math.pow(this.game_score_time_now.diff(moment(g['release-date'])) / 86400000, 2))
+                        Math.max(49, Math.pow(this.game_score_time_now.diff(moment(g['release-date'])) / 86400000, 2));
                 })
         ];
 
@@ -316,8 +316,8 @@ export class GameDao extends Dao<Game> {
 
         let idx = 'popular_games';
         switch (mode) {
-            case 'trending':
-                idx = 'popular_trending_games';
+        case 'trending':
+            idx = 'popular_trending_games';
         }
 
         return await this.load_by_index(idx, key);

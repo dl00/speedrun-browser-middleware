@@ -182,8 +182,8 @@ describe('correct_leaderboard_run_places', () => {
         };
 
         correct_leaderboard_run_places(lb, [
-            { "id": 'subc', 'is-subcategory': true, "values": []},
-            { "id": 'test', 'is-subcategory': false, "values": []},
+            { 'id': 'subc', 'is-subcategory': true, 'values': []},
+            { 'id': 'test', 'is-subcategory': false, 'values': []},
         ]);
 
         expect(lb.runs[0]).to.have.property('place', 1);

@@ -74,7 +74,7 @@ router.get('/game-groups/:id', async (req, res) => {
 
     // metric: game with the most speedruns this month
 
-    let metrics: {[key: string]: Metric} = await run_dao.get_basic_metrics({ gg_id: gg_id });
+    const metrics = await run_dao.get_basic_metrics({ gg_id: gg_id });
 
     if(gg_id === 'site') {
         metrics.total_games = { value: await game_dao.count() };

@@ -1,9 +1,14 @@
+/* eslint @typescript-eslint/no-var-requires: "off" */
+
 import * as assert from 'assert';
 import * as _ from 'lodash';
 
 import * as util from 'util';
 
 import { DB } from '../db';
+
+import Debug from 'debug';
+const debug = Debug('dao');
 
 export interface ScanOptions {
     filter?: any;
@@ -117,7 +122,7 @@ export class Dao<T> implements DaoConfig<T> {
         }
 
         // run the transform for each obj
-        let prev_objs = await this.load(objs.map(this.id_key), {skipComputed: true});
+        const prev_objs = await this.load(objs.map(this.id_key), {skipComputed: true});
         assert.equal(objs.length, prev_objs.length,
             'previous objects should be same length and mappable to new objs');
 
@@ -180,7 +185,7 @@ export class Dao<T> implements DaoConfig<T> {
     public async remove(ids: string|string[]): Promise<Array<T|null>> {
 
         if(!ids || !ids.length) {
-            throw new Error('Dao remove() called with no objs to remove')
+            throw new Error('Dao remove() called with no objs to remove');
         }
 
         if (!_.isArray(ids)) {
@@ -200,7 +205,7 @@ export class Dao<T> implements DaoConfig<T> {
         return await require(`./backing/${this.backing}`).remove(this, ids);
     }
 
-    public async scan(options: ScanOptions, func: Function): Promise<number> {
+    public async scan(options: ScanOptions, func: (objs: any[]) => void): Promise<number> {
         return await require(`./backing/${this.backing}`).scan(this, options, func);
     }
 
@@ -241,10 +246,10 @@ export class Dao<T> implements DaoConfig<T> {
 
         const count = await require(`./backing/${this.backing}`).scan(this, scan_options, async (objs: any) => {
             seen += objs.length;
-            console.log('[MASSAGE]', seen);
+            debug('massage %d', seen);
 
             for (const nullobj of _.remove(objs, (v: T) => !this.id_key(v))) {
-                console.log('[IGNORE/CHECK]', nullobj);
+                debug('ignore %O', nullobj);
             }
 
             await this.massage_hook(objs);

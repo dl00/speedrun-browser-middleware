@@ -9,7 +9,7 @@ import { DB, load_db } from '../lib/db';
 export let storedb: DB|null = null;
 export let config: Config|null = null;
 
-export let MIN_APP_VERSION = '20';
+export const MIN_APP_VERSION = '20';
 
 export function create_express_server() {
     const app = express();
@@ -20,7 +20,7 @@ export function create_express_server() {
 }
 
 export async function run(conf: Config) {
-
+    /* eslint no-console: "off" */
     console.log('Start API');
 
     config = conf;

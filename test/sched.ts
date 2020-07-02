@@ -12,124 +12,70 @@ let taskCalled = 0;
 
 // test spy functions for the sched
 async function generate_test(_sched: Sched, cur: CursorData<any> | null) {
-  return { items: [], asOf: Date.now(), pos: cur?.pos != '1' ? '1' : null, desc: 'test', done: 0, total: 0 }
+    return { items: [], asOf: Date.now(), pos: cur?.pos != '1' ? '1' : null, desc: 'test', done: 0, total: 0 };
 }
 
 async function apply_test() {
-  taskCalled++;
+    taskCalled++;
 }
 
 function reset() {
-  taskCalled = 0;
+    taskCalled = 0;
 }
 
 function test_timeout(_sched: Sched, _cur: CursorData<any> | null) {
-  // returns a promise that never resolves
-  return new Promise<CursorData<any>>(function() {})
+    // returns a promise that never resolves
+    return new Promise<CursorData<any>>(() => { return; });
 }
 
 export const SCHED_TEST_CONFIG: SchedConfig = {
-  db: load_config().db,
+    db: load_config().db,
 
-  server: { host: 'localhost', port: 3051 },
+    server: { host: 'localhost', port: 3051 },
 
-  resources: {
-    'slow': {
-      name: 'slow',
-      rateLimit: 10
+    resources: {
+        'slow': {
+            name: 'slow',
+            rateLimit: 10
+        },
+
+        'fast': {
+            name: 'fast',
+            rateLimit: 0
+        }
     },
 
-    'fast': {
-      name: 'fast',
-      rateLimit: 0
+    generators: { 'test': generate_test, 'timeout': test_timeout },
+    tasks: { 'test': apply_test, 'timeout': test_timeout },
+
+    jobs: {
+
     }
-  },
-
-  generators: { 'test': generate_test, 'timeout': test_timeout },
-  tasks: { 'test': apply_test, 'timeout': test_timeout },
-
-  jobs: {
-
-  }
-}
+};
 
 // Many of these tests depend on time based constraints which makes for great false negatives. This should be fixed.
 describe('Sched', () => {
-  var schedDb: DB;
-  var sched: Sched;
+    let schedDb: DB;
+    let sched: Sched;
 
-  before(async () => {
-    schedDb = await load_db(SCHED_TEST_CONFIG.db)
-  })
+    before(async () => {
+        schedDb = await load_db(SCHED_TEST_CONFIG.db);
+    });
 
-  beforeEach(async () => {
-    await schedDb.redis.flushall();
-    reset();
-  })
+    beforeEach(async () => {
+        await schedDb.redis.flushall();
+        reset();
+    });
 
-  afterEach(async () => {
-    await sched.close();
-  })
+    afterEach(async () => {
+        await sched.close();
+    });
 
-  it('should accept single job', async () => {
-    sched = new Sched(SCHED_TEST_CONFIG);
-    await sched.init();
+    it('should accept single job', async () => {
+        sched = new Sched(SCHED_TEST_CONFIG);
+        await sched.init();
 
-    const job: InitJob = {
-      name: 'dummy',
-      resources: ['fast'],
-      generator: 'test',
-      task: 'test',
-      args: [],
-      blockedBy: [],
-      timeout: 10
-    };
-
-    await sched.push_job(job);
-
-    try {
-      await sched.push_job(job);
-      throw new Error('expected sched.push_job to throw an error due to duplicate')
-    }
-    catch(_e) {}
-
-    await sched.loop();
-
-    // TODO: would be way better if we could "await" for the below condition to succeed rather than sleeping some time
-    await sleep(5);
-
-    // make sure the job was called
-    expect(taskCalled).to.eql(1);
-
-    await sched.loop();
-    await sched.loop();
-    await sleep(5);
-    await sched.loop();
-
-    await sleep(5);
-
-    // make sure the job was only called once (job is completed after 2nd run)
-    expect(taskCalled).to.eql(2);
-
-    // make sure we can add the job again now
-    taskCalled = 0;
-    await sched.push_job(job);
-
-    // the job should run to completion if we call in repeat mode
-    await sched.loop(true);
-
-    await sleep(10);
-
-    expect(taskCalled).to.eql(2);
-  });
-
-  it('should schedule jobs', async () => {
-    sched = new Sched(_.defaults({
-      jobs: {
-        'test': {
-          // basically this is a no-wait poller
-          interval: 1,
-          job: {
+        const job: InitJob = {
             name: 'dummy',
             resources: ['fast'],
             generator: 'test',
@@ -137,119 +83,175 @@ describe('Sched', () => {
             args: [],
             blockedBy: [],
             timeout: 10
-          }
+        };
+
+        await sched.push_job(job);
+
+        try {
+            await sched.push_job(job);
+            throw new Error('expected sched.push_job to throw an error due to duplicate');
         }
-      }
-    }, SCHED_TEST_CONFIG));
+        catch(_e) {
+            _.noop();
+        }
 
-    await sched.init();
-    await sleep(5);
+        await sched.loop();
 
-    // should see the job scheduled
-    await sched.loop();
-    await sleep(5);
-    expect(taskCalled).to.eql(1);
+        // TODO: would be way better if we could "await" for the below condition to succeed rather than sleeping some time
+        await sleep(5);
 
-    await sched.loop();
-    await sleep(5);
-    expect(taskCalled).to.eql(2);
+        // make sure the job was called
+        expect(taskCalled).to.eql(1);
+
+        await sched.loop();
+        await sched.loop();
+        await sleep(5);
+        await sched.loop();
+
+        await sleep(5);
+
+        // make sure the job was only called once (job is completed after 2nd run)
+        expect(taskCalled).to.eql(2);
+
+        // make sure we can add the job again now
+        taskCalled = 0;
+        await sched.push_job(job);
+
+        // the job should run to completion if we call in repeat mode
+        await sched.loop(true);
+
+        await sleep(10);
+
+        expect(taskCalled).to.eql(2);
+    });
+
+    it('should schedule jobs', async () => {
+        sched = new Sched(_.defaults({
+            jobs: {
+                'test': {
+                    // basically this is a no-wait poller
+                    interval: 1,
+                    job: {
+                        name: 'dummy',
+                        resources: ['fast'],
+                        generator: 'test',
+                        task: 'test',
+                        args: [],
+                        blockedBy: [],
+                        timeout: 10
+                    }
+                }
+            }
+        }, SCHED_TEST_CONFIG));
+
+        await sched.init();
+        await sleep(5);
+
+        // should see the job scheduled
+        await sched.loop();
+        await sleep(5);
+        expect(taskCalled).to.eql(1);
+
+        await sched.loop();
+        await sleep(5);
+        expect(taskCalled).to.eql(2);
 
     // cannot test reschedule due to too much chaos
-  });
+    });
 
-  it('should rate limit with multiple resources round robin', async () => {
-    sched = new Sched(SCHED_TEST_CONFIG);
-    await sched.init();
+    it('should rate limit with multiple resources round robin', async () => {
+        sched = new Sched(SCHED_TEST_CONFIG);
+        await sched.init();
 
-    const job1: InitJob = {
-      name: 'dummy1',
-      resources: ['fast'],
-      generator: 'test',
-      task: 'test',
-      args: [],
-      blockedBy: [],
-      timeout: 10
-    };
+        const job1: InitJob = {
+            name: 'dummy1',
+            resources: ['fast'],
+            generator: 'test',
+            task: 'test',
+            args: [],
+            blockedBy: [],
+            timeout: 10
+        };
 
-    const job2: InitJob = {
-      name: 'dummy2',
-      resources: ['fast'],
-      generator: 'test',
-      task: 'test',
-      args: [],
-      blockedBy: [],
-      timeout: 10
-    };
+        const job2: InitJob = {
+            name: 'dummy2',
+            resources: ['fast'],
+            generator: 'test',
+            task: 'test',
+            args: [],
+            blockedBy: [],
+            timeout: 10
+        };
 
-    await sched.push_job(job1);
-    await sched.push_job(job2);
+        await sched.push_job(job1);
+        await sched.push_job(job2);
 
-    await sched.loop();
+        await sched.loop();
 
-    // TODO: would be way better if we could "await" for the below condition to succeed rather than sleeping some time
-    await sleep(5);
+        // TODO: would be way better if we could "await" for the below condition to succeed rather than sleeping some time
+        await sleep(5);
 
-    // make sure the job was called
-    expect(taskCalled).to.eql(1);
+        // make sure the job was called
+        expect(taskCalled).to.eql(1);
 
-    await sched.loop();
-    await sched.loop();
-    await sleep(5);
-    await sched.loop();
+        await sched.loop();
+        await sched.loop();
+        await sleep(5);
+        await sched.loop();
 
-    await sleep(5);
+        await sleep(5);
 
-    // make sure the job was only called once (job is completed after 2nd run)
-    expect(taskCalled).to.eql(4);
+        // make sure the job was only called once (job is completed after 2nd run)
+        expect(taskCalled).to.eql(4);
 
-    await sched.loop();
+        await sched.loop();
 
-    expect(taskCalled).to.eql(4);
-  });
+        expect(taskCalled).to.eql(4);
+    });
 
-  it('should handle timeouts', async () => {
-    sched = new Sched(SCHED_TEST_CONFIG);
-    await sched.init();
+    it('should handle timeouts', async () => {
+        sched = new Sched(SCHED_TEST_CONFIG);
+        await sched.init();
 
-    // test timeout on generator
-    const generatorTimeout: InitJob = {
-      name: 'generatorTimeout',
-      resources: ['fast'],
-      generator: 'timeout',
-      task: 'test',
-      args: [],
-      blockedBy: [],
-      timeout: 1
-    };
+        // test timeout on generator
+        const generatorTimeout: InitJob = {
+            name: 'generatorTimeout',
+            resources: ['fast'],
+            generator: 'timeout',
+            task: 'test',
+            args: [],
+            blockedBy: [],
+            timeout: 1
+        };
 
-    await sched.push_job(generatorTimeout);
+        await sched.push_job(generatorTimeout);
 
-    await sched.loop();
-    await sleep(5)
+        await sched.loop();
+        await sleep(5);
 
-    // get the job, it should have a backoff now
-    const job = await sched.get_job('generatorTimeout');
+        // get the job, it should have a backoff now
+        const job = await sched.get_job('generatorTimeout');
 
-    expect(job?.backoff).to.be.greaterThan(0);
+        expect(job?.backoff).to.be.greaterThan(0);
 
-    // test timeout on task
-    const taskTimeout: InitJob = {
-      name: 'taskTimeout',
-      resources: ['fast'],
-      generator: 'test',
-      task: 'timeout',
-      args: [],
-      blockedBy: [],
-      timeout: 4
-    };
+        // test timeout on task
+        const taskTimeout: InitJob = {
+            name: 'taskTimeout',
+            resources: ['fast'],
+            generator: 'test',
+            task: 'timeout',
+            args: [],
+            blockedBy: [],
+            timeout: 4
+        };
 
-    await sched.push_job(taskTimeout);
+        await sched.push_job(taskTimeout);
 
-    await sched.loop();
+        await sched.loop();
 
-    await sleep(5);
+        await sleep(5);
 
-    // get the job, it should have been marked as a failed segment
-    expect(await sched.get_job_failure_count('taskTimeout')).to.be.greaterThan(0);
-  });
-})
+        // get the job, it should have been marked as a failed segment
+        expect(await sched.get_job_failure_count('taskTimeout')).to.be.greaterThan(0);
+    });
+});

@@ -7,6 +7,9 @@ import { GameGroupDao } from '../../lib/dao/game-groups';
 import * as api from '../';
 import * as api_response from '../response';
 
+import Debug from 'debug';
+const debug = Debug('api:game-groups');
+
 const router = Router();
 
 // retrieves a list of games from most popular to least popular
@@ -20,7 +23,7 @@ router.get('/', async function(req, res) {
             const ggs = _.reject(await gg_dao.load_popular(), _.isNil);
             return api_response.complete(res, ggs);
         } catch (err) {
-            console.log('api/game-groups: could not get top list:', err);
+            debug('api/game-groups: could not get top list:', err);
             api_response.error(res, api_response.err.INTERNAL_ERROR());
         }
     }
@@ -36,7 +39,7 @@ router.get('/', async function(req, res) {
         const ggs = _.reject(await gg_dao.load_by_index('autocomplete', query), _.isNil);
         api_response.complete(res, ggs);
     } catch (err) {
-        console.log('api/game-groups: could not autocompleted:', err);
+        debug('api/game-groups: could not autocompleted:', err);
         api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 });

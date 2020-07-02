@@ -62,7 +62,7 @@ class PopularStreamsIndex implements IndexDriver<Stream> {
 
             // install master rank list
             m.zadd(POPULAR_STREAMS_KEY, strm.viewer_count.toString(), strm.user.id);
-            m.zadd(POPULAR_STREAMS_KEY + ':' + strm.language, strm.viewer_count.toString(), strm.user.id)
+            m.zadd(POPULAR_STREAMS_KEY + ':' + strm.language, strm.viewer_count.toString(), strm.user.id);
 
             for(const gg of strm.gg_ids) {
                 m.zadd(POPULAR_STREAMS_KEY + `:${gg}`, strm.viewer_count.toString(), strm.user.id);
@@ -117,7 +117,7 @@ export class StreamDao extends Dao<Stream> {
     public async load_popular_game_group(offset?: number, gg_id?: string|null, lang?: string|null) {
         const key = `${gg_id || ''}:${lang || ''}:${offset || 0}`;
 
-        let idx = 'popular_streams_game_groups';
+        const idx = 'popular_streams_game_groups';
 
         return await this.load_by_index(idx, key);
     }

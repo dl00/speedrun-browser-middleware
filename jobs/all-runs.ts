@@ -11,7 +11,8 @@ import { CursorData, Sched } from '../sched/index';
 const RUN_BATCH_COUNT = 200;
 const RUN_LATEST_COUNT = 25;
 
-const debug = require('debug')('jobs:all-runs');
+import Debug from 'debug';
+const debug = Debug('jobs:all-runs');
 
 export interface SRCRun {
 
@@ -45,7 +46,7 @@ export async function generate_all_runs(sched: Sched, cur: CursorData<SRCRun>|nu
         done: (cur?.done || 0) + res.data.data.length,
         total: 0,
         pos: res.data.pagination.max == res.data.pagination.size ? (nextPos + RUN_BATCH_COUNT).toString() : null
-    }
+    };
 }
 
 export async function generate_latest_runs(sched: Sched, cur: CursorData<SRCRun>|null, args: string[]): Promise<CursorData<SRCRun>|null> {
@@ -74,11 +75,11 @@ export async function generate_latest_runs(sched: Sched, cur: CursorData<SRCRun>
     const needs_continue = 
         res.data.pagination.max == res.data.pagination.size && latest_run_date && latest_run_date <= cur_run_date;
     
-    debug(`continuation: db ${latest_run_date} <= site ${cur_run_date}: ${needs_continue ? 'continue' : 'stop'}`)
+    debug(`continuation: db ${latest_run_date} <= site ${cur_run_date}: ${needs_continue ? 'continue' : 'stop'}`);
 
     // continuation pointer management
     if(!cur?.pos) {
-        const new_latest_run_date = _.get(res.data.data[0], run_date_property)
+        const new_latest_run_date = _.get(res.data.data[0], run_date_property);
         await sched.storedb!.redis.set(latest_run_redis_property + ':pending', new_latest_run_date);
     }
 
@@ -94,7 +95,7 @@ export async function generate_latest_runs(sched: Sched, cur: CursorData<SRCRun>
         total: 0,
         pos: needs_continue ? 
             (nextPos + RUN_LATEST_COUNT).toString() : null
-    }
+    };
 }
 
 // for pulling a single run which we previously lacked the resources to do
@@ -163,15 +164,15 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
             const oldIds = _.map(dbRuns, 'run.id');
             const newIds = _.map(runs, 'id');
 
-            const toRemove = _.difference(oldIds, newIds)
+            const toRemove = _.difference(oldIds, newIds);
             if (toRemove.length) {
                 await run_dao.remove(toRemove);
             }
         }
 
         let save_runs = runs.map((run: Run) => {
-            return {run: run}
-        })
+            return {run: run};
+        });
 
         const cur_runs = await run_dao.load(_.map(save_runs, 'run.id'));
 

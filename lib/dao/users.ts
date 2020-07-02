@@ -156,7 +156,7 @@ export function apply_personal_best(player: User, run: LeaderboardRunEntry): New
 function get_user_search_indexes(user: User) {
     const indexes: Array<{ text: string, score: number, namespace?: string }> = [];
 
-    let score = Math.floor((user.score || 1) * 100);
+    const score = Math.floor((user.score || 1) * 100);
 
     if (user.name) {
         indexes.push({ text: user.name.toLowerCase(), score: score });
@@ -282,23 +282,23 @@ export class UserDao extends Dao<User> {
 
         let score = 0;
 
-        let games = await new GameDao(this.db).load(_.keys(player.bests));
+        const games = await new GameDao(this.db).load(_.keys(player.bests));
 
-        for(let game of games) {
+        for(const game of games) {
             if(!game)
                 continue;
 
-            let game_score = Math.max(1, game.score || 1);
+            const game_score = Math.max(1, game.score || 1);
 
-            let pbg = player.bests[game.id];
-            for(let category_id in pbg.categories) {
-                let pbc = pbg.categories[category_id];
+            const pbg = player.bests[game.id];
+            for(const category_id in pbg.categories) {
+                const pbc = pbg.categories[category_id];
 
                 if(pbc.run) {
                     score += game_score / (pbc.run.place || 100);
                 }
                 else if(pbc.levels) {
-                    for(let level_id in pbc.levels)
+                    for(const level_id in pbc.levels)
                         score += game_score / _.keys(pbc.levels).length /
                             (pbc.levels[level_id].run.place || 100);
                 }

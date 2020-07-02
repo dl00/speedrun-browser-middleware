@@ -27,14 +27,14 @@ export async function scanOnce(conf: DaoConfig<any>, options: ScanOptions): Prom
     const scan = await conf.db.redis.hscan(conf.collection, options.cur || 0, 'COUNT', options.batchSize);
 
     const objs = _.chain(scan[1])
-            .filter((_v: any, i: number) => i % 2 === 1)
-            .map(JSON.parse)
-            .value();
+        .filter((_v: any, i: number) => i % 2 === 1)
+        .map(JSON.parse)
+        .value();
 
     return [parseInt(scan[0]) != 0 ? parseInt(scan[0]) : null, objs];
 }
 
-export async function scan(conf: DaoConfig<any>, options: ScanOptions, func: Function): Promise<number> {
+export async function scan(conf: DaoConfig<any>, options: ScanOptions, func: (objs: any[]) => void): Promise<number> {
     let cur = 0;
     let count = 0;
 

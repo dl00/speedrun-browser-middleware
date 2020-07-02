@@ -1,6 +1,6 @@
 // Maintains an updated list of streams from twitch by polling
 
-import * as _ from 'lodash'
+import * as _ from 'lodash';
 
 import got_up from '../lib/request';
 
@@ -16,9 +16,9 @@ import { load_config } from '../lib/config';
 
 const config = load_config();
 
-const TWITCH_STREAMS_URL = 'https://api.twitch.tv/helix/streams'
-const TWITCH_GAMES_URL = 'https://api.twitch.tv/helix/games/top'
-const TWITCH_ID_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
+const TWITCH_STREAMS_URL = 'https://api.twitch.tv/helix/streams';
+const TWITCH_GAMES_URL = 'https://api.twitch.tv/helix/games/top';
+const TWITCH_ID_TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
 
 const TWITCH_STREAMS_BATCH_SIZE = 80;
 
@@ -38,7 +38,7 @@ const got = got_up.extend({
             }
         ]
     }
-})
+});
 
 interface TwitchRawGame {
     id: string;
@@ -53,23 +53,23 @@ interface TwitchRawStream {
 
 export function extract_user_twitch_login(twitch_url: string|undefined) {
     if(!twitch_url)
-        return null
+        return null;
 
-    const m = twitch_url.match(/twitch.(tv|com)\/([^?/]*)/)
+    const m = twitch_url.match(/twitch.(tv|com)\/([^?/]*)/);
     if(!m)
-        return null
+        return null;
 
     if(!m[2].match(/^[a-zA-Z0-9_]{4,25}$/) || m[2][0] === '_')
-        return null
+        return null;
 
-    return m[2]
+    return m[2];
 }
 
 async function refresh_token() {
     const twitch_response = await got_up.post(TWITCH_ID_TOKEN_URL, {
         searchParams: {
-            client_id: config.twitch!!.token,
-            client_secret: config.twitch!!.secret,
+            client_id: config.twitch!.token,
+            client_secret: config.twitch!.secret,
             grant_type: 'client_credentials'
         }
     });
@@ -81,7 +81,7 @@ async function refresh_token() {
 async function poll_stream_statuses(game_dao: GameDao, user_dao: UserDao, user_logins: { user_id: string, user_login: string}[]): Promise<Stream[]> {
     //const qs = user_logins.map(ul => 'user_login=' + encodeURIComponent(ul.user_login)).join('&') + '&first=100'
 
-    const keyed_logins = _.keyBy(user_logins, v => v.user_login.toLowerCase())
+    const keyed_logins = _.keyBy(user_logins, v => v.user_login.toLowerCase());
 
     const raw_streams = (await got.get<{data: Stream[] }>(TWITCH_STREAMS_URL + '?' + querystring.stringify({
         first: 100,
@@ -92,7 +92,7 @@ async function poll_stream_statuses(game_dao: GameDao, user_dao: UserDao, user_l
         return [];
 
     // get the games corresponding to all these streams
-    const mapped_games = await game_dao.load_by_index('twitch_id', _.map(raw_streams, 'game_id'))
+    const mapped_games = await game_dao.load_by_index('twitch_id', _.map(raw_streams, 'game_id'));
     const mapped_users = await user_dao.load(_.map(raw_streams, (rs) => {
         const kl = rs ? keyed_logins[(<string>rs.user_name).toLowerCase()] : null;
         if(!kl)
@@ -119,7 +119,7 @@ async function poll_stream_statuses(game_dao: GameDao, user_dao: UserDao, user_l
             language: rs.language,
             thumbnail_url: rs.thumbnail_url,
             started_at: rs.started_at
-        }
+        };
     }), _.isObject) as Stream[];
 }
 
@@ -129,7 +129,7 @@ export async function generate_twitch_games(_sched: Sched, cur: CursorData<Twitc
     const params: any = { first: 100 };
 
     if(cur?.pos)
-        params.after = cur.pos
+        params.after = cur.pos;
 
 
     const twitchResponse = await got.get<{ data: TwitchRawGame[], pagination: any }>(TWITCH_GAMES_URL, {
@@ -177,14 +177,14 @@ export async function generate_all_twitch_streams(sched: Sched, cur: CursorData<
 
     const [pos, users] = await user_dao.scanOnce({batchSize: TWITCH_STREAMS_BATCH_SIZE, cur: cur?.pos });
 
-    let user_logins: { user_id: string, user_login: string}[] = []
+    const user_logins: { user_id: string, user_login: string}[] = [];
 
-    for(let user of users) {
-        const user_login = extract_user_twitch_login(user.twitch ? user.twitch!.uri : undefined)
+    for(const user of users) {
+        const user_login = extract_user_twitch_login(user.twitch ? user.twitch!.uri : undefined);
         if(!user_login)
             continue;
         
-        user_logins.push({ user_login, user_id: user.id })
+        user_logins.push({ user_login, user_id: user.id });
     }
 
     const items = (await poll_stream_statuses(game_dao, user_dao, user_logins)).map((ss: Stream) => {
@@ -192,7 +192,7 @@ export async function generate_all_twitch_streams(sched: Sched, cur: CursorData<
             id: ss.user.id,
             online: true,
             data: ss
-        }
+        };
     });
 
     return {
@@ -218,7 +218,7 @@ export async function generate_running_twitch_streams(sched: Sched, cur: CursorD
         return {
             user_login: s.user_name,
             user_id: s.user.id
-        }
+        };
     }))), 'user.id');
 
 
@@ -227,7 +227,7 @@ export async function generate_running_twitch_streams(sched: Sched, cur: CursorD
             id: s.user.id,
             online: !!newStreams[s.user.id],
             data: newStreams[s.user.id]
-        }
+        };
     });
 
     return {

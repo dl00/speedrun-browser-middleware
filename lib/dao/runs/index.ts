@@ -10,7 +10,7 @@ import { get_player_pb_chart, RecordChartIndex } from './charts';
 import { SupportingStructuresIndex } from './supporting-structures';
 import { LeaderboardRunEntry, Run, BulkRun, NewRecord } from './structures';
 export { LeaderboardRunEntry, Run, BulkRun, NewRecord } from './structures';
-import { RecentRunsIndex } from './recent-runs'
+import { RecentRunsIndex } from './recent-runs';
 
 import { DB } from '../../db';
 
@@ -23,6 +23,9 @@ import { BulkCategory, Category, category_to_bulk, CategoryDao } from '../catego
 import { BulkLevel, Level, level_to_bulk, LevelDao } from '../levels';
 import { BulkUser, User, user_to_bulk } from '../users';
 import { UserDao } from '../users';
+
+import Debug from 'debug';
+const debug = Debug('dao:runs');
 
 export function normalize_run(d: Run) {
     normalize(d);
@@ -167,20 +170,20 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         }, {
             background: true,
             partialFilterExpression: {'run.status.status': 'verified'},
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         db.mongo.collection(this.collection).createIndex({
             'run.submitted': 1,
         }, {
             background: true
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         db.mongo.collection(this.collection).createIndex({
             'run.game.id': 1,
             'run.date': 1,
         }, {
             background: true,
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         db.mongo.collection(this.collection).createIndex({
             'run.category.id': 1,
@@ -188,7 +191,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
             'run.date': 1,
         }, {
             background: true,
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         db.mongo.collection(this.collection).createIndex({
             'run.players.id': 1,
@@ -198,7 +201,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
             'run.date': 1,
         }, {
             background: true,
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         // used to calculate leaderboards
         db.mongo.collection(this.collection).createIndex({
@@ -214,13 +217,13 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
                 'run.status.status': 'verified',
                 'obsolete': false,
             },
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         // used to separate game groups
         db.mongo.collection(this.collection).createIndex({
             'gameGroups': 1,
             'run.date': 1
-        }).then(_.noop, console.error);
+        }).then(_.noop, debug);
 
         this.computed = {
             place: async (lbr: LeaderboardRunEntry) => {
@@ -299,11 +302,11 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
                 'run.values': 1,
             },
         })
-        .sort({
-            'run.times.primary_t': 1,
-            'run.date': 1,
-        })
-        .toArray();
+            .sort({
+                'run.times.primary_t': 1,
+                'run.date': 1,
+            })
+            .toArray();
     }
 
     /// return new records saved to DB during the lifetime of this Dao instance
@@ -311,7 +314,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         return (this.indexes.find((ind) => ind.name === 'supporting_structures') as SupportingStructuresIndex).new_records;
     }
 
-    public async load_latest_runs(offset?: number, ggId?: string, verified: boolean = true) {
+    public async load_latest_runs(offset?: number, ggId?: string, verified = true) {
         const key = `${ggId || ''}:${offset || 0}`;
         return await this.load_by_index(verified ? 'latest_verified_runs' : 'latest_new_runs', key);
     }
@@ -323,12 +326,12 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
                 $gt: start,
                 $lt: end
             }
-        }, { projection: {_id: true}}).toArray(), '_id')
+        }, { projection: {_id: true}}).toArray(), '_id');
     }
 
     public async get_player_count(filter: any) {
 
-        let res = await this.db.mongo.collection(this.collection).aggregate([
+        const res = await this.db.mongo.collection(this.collection).aggregate([
             {$match: filter},
             {$group: { _id: '$run.players.id'}},
             {$count: 'total_players'}
@@ -346,11 +349,11 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
             },
             {
                 $facet: _.chain(month_bounaries)
-                        .map((v) => {
-                            return [v, [{$match: {'run.date': {$lt: v}}}, {$count: 'y'}]];
-                        })
-                        .fromPairs()
-                        .value(),
+                    .map((v) => {
+                        return [v, [{$match: {'run.date': {$lt: v}}}, {$count: 'y'}]];
+                    })
+                    .fromPairs()
+                    .value(),
             },
         ]).toArray())[0];
 
@@ -371,7 +374,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
 
     public async get_group_submission_volume(gg_id?: string|null): Promise<Chart> {
 
-        let filter: any = { 'run.status.status': 'verified' };
+        const filter: any = { 'run.status.status': 'verified' };
 
         if(gg_id)
             filter.gameGroups = gg_id;
@@ -531,14 +534,14 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
             chart_type: 'pie',
             data: {
                 main: _.chain(chart_data)
-                .map((p) => {
-                    return {
-                        x: 0,
-                        y: p.count,
-                        obj: p.game,
-                    };
-                })
-                .value(),
+                    .map((p) => {
+                        return {
+                            x: 0,
+                            y: p.count,
+                            obj: p.game,
+                        };
+                    })
+                    .value(),
             },
             timestamp: new Date(),
         };
@@ -550,7 +553,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
 
     public async get_basic_metrics(opts: {game_id?: string|null, player_id?: string|null, gg_id?: string|null}): Promise<{[id: string]: Metric}> {
 
-        let filter: any = {};
+        const filter: any = {};
 
         if(opts.gg_id && opts.gg_id != 'site')
             filter['gameGroups'] = opts.gg_id;
@@ -560,13 +563,13 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         if(opts.player_id)
             filter['run.players.id'] = opts.player_id;
 
-        let metrics: {[id: string]: Metric} = {};
+        const metrics: {[id: string]: Metric} = {};
 
         if(opts.game_id || opts.player_id) {
-            let totalRunTimeAggr = (await this.db.mongo.collection(this.collection).aggregate([
-                    {$match: filter},
-                    {$group: { _id: null, time: {$sum: '$run.times.primary_t'}}}
-                ]).toArray())[0];
+            const totalRunTimeAggr = (await this.db.mongo.collection(this.collection).aggregate([
+                {$match: filter},
+                {$group: { _id: null, time: {$sum: '$run.times.primary_t'}}}
+            ]).toArray())[0];
 
             if(totalRunTimeAggr)
                 metrics.total_run_time = { value: totalRunTimeAggr.time };

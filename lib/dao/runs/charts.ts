@@ -14,6 +14,9 @@ import { Variable } from '../../../lib/speedrun-api';
 
 import { LeaderboardRunEntry, run_to_bulk } from './';
 
+import Debug from 'debug';
+const debug = Debug('dao:runs:charts');
+
 export class RecordChartIndex implements IndexDriver<LeaderboardRunEntry> {
     public name: string;
 
@@ -91,7 +94,7 @@ export class RecordChartIndex implements IndexDriver<LeaderboardRunEntry> {
                 chart.data[subcategory_id] = [point];
             } else if (point.y < (chart.data[subcategory_id][chart.data[subcategory_id].length - 1] as LineChartData).y) {
                 chart.data[subcategory_id].push(point);
- }
+            }
         }
 
         await new ChartDao(conf.db).save(chart);
@@ -155,16 +158,14 @@ export async function make_all_wr_charts(conf: DaoConfig<LeaderboardRunEntry>) {
 
     const rci = new RecordChartIndex('');
 
-    leaderboard_dao.scan({batchSize: 100}, async (lbs: Leaderboard[]) => {
-        for(let lb of lbs) {
-            console.log('CHART:', lb.game, lb.category, lb.level);
-
+    await leaderboard_dao.scan({batchSize: 100}, async (lbs: Leaderboard[]) => {
+        for(const lb of lbs) {
             if(lb.runs.length) {
                 try {
                     await rci.make_chart(conf, lb.category, lb.level || null);
                 } catch (err) {
                     // TODO: for right now just print and ignore
-                    console.error(err);
+                    debug(err);
                 }
             }
         }
@@ -172,7 +173,7 @@ export async function make_all_wr_charts(conf: DaoConfig<LeaderboardRunEntry>) {
 }
 
 export async function get_runs_total_time(conf: DaoConfig<LeaderboardRunEntry>) {
-    let metric_dao = new MetricDao(conf.db);
+    const metric_dao = new MetricDao(conf.db);
 
     const total_run_time = (await conf.db.mongo.collection(conf.collection)
         .aggregate([{$group: {_id: null, time: {$sum: 'run.times.primary_t'}}}]).toArray())[0].time;

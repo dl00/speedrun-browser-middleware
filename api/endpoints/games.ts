@@ -9,6 +9,9 @@ import { Category, CategoryDao, standard_sort_categories } from '../../lib/dao/c
 import { Game, GameDao } from '../../lib/dao/games';
 import { Level, LevelDao } from '../../lib/dao/levels';
 
+import Debug from 'debug';
+const debug = Debug('api:games');
+
 const router = Router();
 
 async function get_popular_games(req: Request, res: Response) {
@@ -45,7 +48,7 @@ async function get_popular_games(req: Request, res: Response) {
             total: 100000,
         });
     } catch (err) {
-        console.error('api/games/genre: could not send genred games:', err);
+        debug('api/games/genre: could not send genred games:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 }
@@ -93,7 +96,7 @@ router.get('/:ids', async (req, res) => {
 
         return api_response.complete(res, games);
     } catch (err) {
-        console.error('api/games/genre: could not send genred games:', err);
+        debug('api/games/genre: could not send genred games:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 });

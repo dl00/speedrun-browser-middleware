@@ -7,6 +7,9 @@ import { StreamDao } from '../../lib/dao/streams';
 import * as api from '..';
 import * as api_response from '../response';
 
+import Debug from 'debug';
+const debug = Debug('api:streams');
+
 const router = Router();
 
 async function get_game_group_streams(req: Request, res: Response) {
@@ -31,7 +34,7 @@ async function get_game_group_streams(req: Request, res: Response) {
         
         return api_response.complete(res, ggs);
     } catch (err) {
-        console.log('api/streams: could not get top list:', err);
+        debug('api/streams: could not get top list:', err);
         api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 }

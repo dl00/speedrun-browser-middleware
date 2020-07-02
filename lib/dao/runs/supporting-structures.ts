@@ -25,7 +25,7 @@ function generate_run_obsolete_filter(categories: {[key: string]: Category|null}
     const filter: any = {
         'run.game.id': run.run.game.id,
         'run.category.id': run.run.category.id,
-        "$or": [
+        '$or': [
             {'run.date': {$lt: run.run.date}},
             {'run.date': run.run.date, 'run.times.primary_t': {$gt: run.run.times.primary_t} },
             {'run.date': null},
@@ -47,7 +47,7 @@ function generate_run_obsolete_filter(categories: {[key: string]: Category|null}
         }
         else {
             // TODO: this is hacky
-            filter[`unused_dummy`] = 'foobar';
+            filter['unused_dummy'] = 'foobar';
         }
     });
 
@@ -120,9 +120,9 @@ export class SupportingStructuresIndex implements IndexDriver<LeaderboardRunEntr
                 }
 
                 leaderboards[leaderboard_id] = {
-                	game: categories[category_id]!.game as string,
+                    game: categories[category_id]!.game as string,
                     weblink: '',
-                	category: category_id,
+                    category: category_id,
                     players: {},
                     runs: [],
                 };
@@ -184,7 +184,7 @@ export class SupportingStructuresIndex implements IndexDriver<LeaderboardRunEntr
                 {'run.date': {$gt: r.run.date}},
                 {'run.date': r.run.date, 'run.times.primary_t': {$lt: r.run.times.primary_t} },
                 {'run.date': null},
-            ]
+            ];
 
             // run must be verified in order to obsolete this run
             filter_mod['run.status.status'] = 'verified';

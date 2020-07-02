@@ -10,6 +10,9 @@ import { game_to_bulk, GameDao } from '../../lib/dao/games';
 import { user_to_bulk, UserDao } from '../../lib/dao/users';
 import { GameGroupDao } from '../../lib/dao/game-groups';
 
+import Debug from 'debug';
+const debug = Debug('api:autocomplete');
+
 interface IndexerResponse {[type: string]: any[]}
 
 const router = Router();
@@ -43,7 +46,7 @@ router.get('/', async (req, res) => {
             search: results,
         });
     } catch (err) {
-        console.log('api/autocomplete: could not autocompleted:', err);
+        debug('api/autocomplete: could not autocompleted:', err);
         api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 });

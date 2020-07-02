@@ -9,11 +9,14 @@ import { RunDao } from '../../lib/dao/runs';
 import * as api from '../';
 import * as api_response from '../response';
 
+import Debug from 'debug';
+const debug = Debug('api:runs');
+
 const router = Router();
 
 async function get_latest_runs(req: Request, res: Response) {
     let start = 0;
-    let verified = req.query.verified !== 'false';
+    const verified = req.query.verified !== 'false';
 
     if (req.query.start) {
         start = parseInt(req.query.start);
@@ -41,7 +44,7 @@ async function get_latest_runs(req: Request, res: Response) {
             total: 100000,
         });
     } catch (err) {
-        console.error('api/runs: could not send latest runs:', err);
+        debug('api/runs: could not send latest runs:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 }
@@ -70,7 +73,7 @@ router.get('/:ids', async (req, res) => {
 
         return api_response.complete(res, runs);
     } catch (err) {
-        console.error('api/runs: could not send runs from list:', err);
+        debug('api/runs: could not send runs from list:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 });

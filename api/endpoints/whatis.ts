@@ -49,7 +49,7 @@ router.get('/:ids', async (req, res) => {
             });
         } else {
             types.push(null);
- }
+        }
     }
 
     return api_response.complete(res, types);

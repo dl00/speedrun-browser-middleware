@@ -33,7 +33,7 @@ export async function save(conf: DaoConfig<any>, objs: any[]) {
                     replacement: obj,
                     upsert: true,
                 }
-            }
+            };
         }), {
             ordered: false
         }
@@ -53,7 +53,7 @@ export async function load(conf: DaoConfig<any>, ids: any[]) {
         if (_.isNil(v))
             return null;
         else
-            return _.omit(v, '_id')
+            return _.omit(v, '_id');
     });
 }
 
@@ -80,7 +80,7 @@ export async function scanOnce(conf: DaoConfig<any>, options: ScanOptions): Prom
     return [cursor.hasNext() ? cursor : null, objs];
 }
 
-export async function scan(conf: DaoConfig<any>, options: ScanOptions, func: Function): Promise<number> {
+export async function scan(conf: DaoConfig<any>, options: ScanOptions, func: (objs: any[]) => void): Promise<number> {
     const cursor = await conf.db.mongo.collection(conf.collection)
         .find(options.filter || {})
         .sort(options.sort || {})
@@ -114,7 +114,7 @@ export class MongoMapIndex<T> implements IndexDriver<T> {
     public name: string;
     public key_by: string;
 
-    private created: boolean = false;
+    private created = false;
 
     constructor(name: string, key_by: string) {
         this.name = name;
@@ -135,18 +135,24 @@ export class MongoMapIndex<T> implements IndexDriver<T> {
 
     public async apply(conf: DaoConfig<T>, _objs: T[]) {
         if (!this.created) {
-            const idx: any = {};
-            idx[this.key_by] = 1;
 
             try {
+                await conf.db.mongo.collection(conf.collection).indexExists([this.key_by + '_1']);
+            } catch(err) {
+                // the index does not exist
+                const idx: any = {};
+                idx[this.key_by] = 1;
+
                 await conf.db.mongo.collection(conf.collection).createIndex(idx, {unique: true});
-            } catch (_) {}
+            }
 
             this.created = true;
         }
     }
 
-    public async clear(_conf: DaoConfig<T>, _objs: T[]) {}
+    public async clear(_conf: DaoConfig<T>, _objs: T[]) {
+        return;
+    }
 
     public has_changed(old_obj: T, new_obj: T): boolean {
         return _.get(old_obj, this.key_by) != _.get(new_obj, this.key_by);
@@ -157,7 +163,7 @@ export class MongoMultiIndex<T> implements IndexDriver<T> {
     public name: string;
     public key_by: string;
 
-    private created: boolean = false;
+    private created = false;
 
     constructor(name: string, key_by: string) {
         this.name = name;
@@ -182,14 +188,22 @@ export class MongoMultiIndex<T> implements IndexDriver<T> {
             idx[this.key_by] = 1;
 
             try {
+                await conf.db.mongo.collection(conf.collection).indexExists([this.key_by + '_1']);
+            } catch(err) {
+                // the index does not exist
+                const idx: any = {};
+                idx[this.key_by] = 1;
+
                 await conf.db.mongo.collection(conf.collection).createIndex(idx);
-            } catch (_) {}
+            }
 
             this.created = true;
         }
     }
 
-    public async clear(_conf: DaoConfig<T>, _objs: T[]) {}
+    public async clear(_conf: DaoConfig<T>, _objs: T[]) {
+        return;
+    }
 
     public has_changed(old_obj: T, new_obj: T): boolean {
         return _.get(old_obj, this.key_by) != _.get(new_obj, this.key_by);

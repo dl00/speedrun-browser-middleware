@@ -11,59 +11,59 @@ import { expect } from 'chai';
 
 describe('jobs/gamelist', () => {
 
-  var db: DB;
-  var sched: Sched;
+    let db: DB;
+    let sched: Sched;
 
-  const testGame: jobFuncs.SRCGame = {
-    'id': 'imported_game',
-    'names': {international: 'A Game'},
-    'abbreviation': 'agame',
-    'weblink': 'https://speedrun.com/agame',
-    'platforms': [],
-    'regions': [],
-    'genres': {data: [{id: 'asdf', name: 'asdf'}]},
-    'released': 2019,
-    'developers': [],
-    'publishers': [],
-    'created': '2019-01-01',
-    'release-date': '2019-01-01',
-    'assets': {},
-    'categories': {data: [{id: 'imported_category', name: 'test', weblink: '', miscellaneous: false, type: 'per-game'}]},
-    'levels': {data: []}
-  }
+    const testGame: jobFuncs.SRCGame = {
+        'id': 'imported_game',
+        'names': {international: 'A Game'},
+        'abbreviation': 'agame',
+        'weblink': 'https://speedrun.com/agame',
+        'platforms': [],
+        'regions': [],
+        'genres': {data: [{id: 'asdf', name: 'asdf'}]},
+        'released': 2019,
+        'developers': [],
+        'publishers': [],
+        'created': '2019-01-01',
+        'release-date': '2019-01-01',
+        'assets': {},
+        'categories': {data: [{id: 'imported_category', name: 'test', weblink: '', miscellaneous: false, type: 'per-game'}]},
+        'levels': {data: []}
+    };
 
-  beforeEach(async () => {
-    db = await load_db(load_config().db);
-    await db.mongo.dropDatabase();
-    await db.mongo.setProfilingLevel('all');
-    await db.redis.flushall();
-    sched = new Sched(SCHED_TEST_CONFIG, db);
-  });
-
-  after(async () => {
-    await close_db(db);
-    sched.close();
-  });
-
-  it('should apply game data', async () => {
-    const game_dao = new GameDao(db);
-    const category_dao = new CategoryDao(db);
-
-    await jobFuncs.apply_games(sched, {
-      items: [testGame],
-      pos: null,
-      done: 0,
-      total: 0,
-      asOf: Date.now(),
-      desc: 'dummy'
+    beforeEach(async () => {
+        db = await load_db(load_config().db);
+        await db.mongo.dropDatabase();
+        await db.mongo.setProfilingLevel('all');
+        await db.redis.flushall();
+        sched = new Sched(SCHED_TEST_CONFIG, db);
     });
 
-    const [gd] = await game_dao.load('imported_game');
+    after(async () => {
+        await close_db(db);
+        await sched.close();
+    });
 
-    expect(gd).to.exist;
+    it('should apply game data', async () => {
+        const game_dao = new GameDao(db);
+        const category_dao = new CategoryDao(db);
 
-    const [cd] = await category_dao.load('imported_category');
+        await jobFuncs.apply_games(sched, {
+            items: [testGame],
+            pos: null,
+            done: 0,
+            total: 0,
+            asOf: Date.now(),
+            desc: 'dummy'
+        });
 
-    expect(cd).to.exist;
-  });
+        const [gd] = await game_dao.load('imported_game');
+
+        expect(gd).to.exist;
+
+        const [cd] = await category_dao.load('imported_category');
+
+        expect(cd).to.exist;
+    });
 });

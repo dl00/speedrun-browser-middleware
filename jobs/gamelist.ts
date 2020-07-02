@@ -15,7 +15,8 @@ import { Level, LevelDao } from '../lib/dao/levels';
 
 import { CursorData, Sched } from '../sched/index';
 
-const debug = require('debug')('jobs:gamelist');
+import Debug from 'debug';
+const debug = Debug('jobs:gamelist');
 
 const GAME_BATCH_COUNT = 50;
 
@@ -35,7 +36,7 @@ export async function generate_games(sched: Sched, cur: CursorData<SRCGame>|null
         const d = await pTimeout(puller.do_pull(
             sched.storedb, 
             `/games?embed=levels.variables,categories.variables,platforms,regions,developers,publishers,genres&max=${GAME_BATCH_COUNT}&offset=${cur?.pos || 0}`),
-            30000);
+        30000);
 
         res = d.data.data;
         pagination = d.data.pagination;
@@ -58,7 +59,7 @@ export async function generate_games(sched: Sched, cur: CursorData<SRCGame>|null
             pagination = {
                 max: 1,
                 size: 1
-            }
+            };
         }
         else {
             throw new Error(`src call failed: ${err}`);
@@ -74,7 +75,7 @@ export async function generate_games(sched: Sched, cur: CursorData<SRCGame>|null
         done: (cur?.done || 0) + res.length,
         total: 0,
         pos: pagination.max == pagination.size ? (nextPos + GAME_BATCH_COUNT).toString() : null
-    }
+    };
 }
 
 export async function apply_games(sched: Sched, cur: CursorData<SRCGame>) {
@@ -99,12 +100,12 @@ export async function apply_games(sched: Sched, cur: CursorData<SRCGame>) {
         (<any>g).categories = _.map(g.categories.data, 'id');
         (<any>g).levels = _.map(g.levels.data, 'id');
 
-        for(let groupable of ['genres', 'platforms', 'developers', 'publishers']) {
-            let ggg: GameGroup[] = (g as { [key: string]: any })[groupable].data;
+        for(const groupable of ['genres', 'platforms', 'developers', 'publishers']) {
+            const ggg: GameGroup[] = (g as { [key: string]: any })[groupable].data;
 
             if (ggg && ggg.length) {
-                let type = groupable.substr(0, groupable.length - 1);
-                let moreGameGroups = _.map(
+                const type = groupable.substr(0, groupable.length - 1);
+                const moreGameGroups = _.map(
                     _.cloneDeep(ggg), v => {
                         v.type = type;
                         return v;

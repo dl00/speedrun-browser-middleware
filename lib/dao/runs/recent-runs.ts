@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
-import { DaoConfig, IndexDriver } from '../'
+import { DaoConfig, IndexDriver } from '../';
 
 import { LeaderboardRunEntry, Run } from './structures';
 
@@ -72,8 +72,8 @@ export class RecentRunsIndex implements IndexDriver<LeaderboardRunEntry> {
                 throw new Error(`Missing game for run: ${lbr.run.id}, game id: ${((lbr.run as Run).game as BulkGame).id}`);
             }
 
-            for(let grouping of ['platforms', 'genres', 'publishers', 'developers']) {
-                let ggg: GameGroup[] = (game as {[key: string]: any})[grouping];
+            for(const grouping of ['platforms', 'genres', 'publishers', 'developers']) {
+                const ggg: GameGroup[] = (game as {[key: string]: any})[grouping];
                 for (const group of ggg) {
                     const gg_runs = this.redis_key + ':' + group.id;
                     m.zadd(gg_runs, date_score, lbr.run.id)

@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import * as ioredis from 'ioredis';
 import * as mongodb from 'mongodb';
 
+/* eslint @typescript-eslint/no-var-requires: "off" */
 const Indexer = require('@13013/indexer');
 
 export interface DB {

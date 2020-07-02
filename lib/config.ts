@@ -259,9 +259,9 @@ const CONFIG_LOCATIONS: Array<string|null> = [
     process.env.CONFIG_FILE || null,
 ];
 
-export let config = DEFAULT_CONFIG;
+export const config = DEFAULT_CONFIG;
 
-export let load_config = _.memoize(() => {
+export const load_config = _.memoize(() => {
     let config = DEFAULT_CONFIG;
 
     for (const loc of CONFIG_LOCATIONS) {
@@ -272,7 +272,9 @@ export let load_config = _.memoize(() => {
 
         if (fs.existsSync(loc)) {
             try {
+                /* eslint @typescript-eslint/no-var-requires: "off" */
                 config = _.merge(config, require(loc));
+                /* eslint no-console: "off" */
                 console.log('Loaded configuration:', loc);
             } catch (err) {
                 // TODO: Might want to make sure this is actually "file not found"

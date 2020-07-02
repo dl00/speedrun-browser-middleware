@@ -59,8 +59,8 @@ export function correct_leaderboard_run_places(d: Leaderboard, vars: Variable[])
             run.place =
                 last_places[subcategory_id] !== 1 &&
                     last_runs[subcategory_id].run.times.primary_t === run.run.times.primary_t ?
-                last_runs[subcategory_id].place :
-                last_places[subcategory_id];
+                    last_runs[subcategory_id].place :
+                    last_places[subcategory_id];
 
             last_runs[subcategory_id] = run;
 
@@ -77,7 +77,7 @@ export function make_distribution_chart(lb: Leaderboard, vars: Variable[]): Char
     const subcategory_vars = _.filter(vars, 'is-subcategory');
 
     const chart: Chart = {
-        item_id: `leaderboards_distribution`,
+        item_id: 'leaderboards_distribution',
         item_type: 'runs',
         chart_type: 'line',
         aggr: 'time',

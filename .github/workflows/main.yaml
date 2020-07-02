@@ -35,8 +35,12 @@ jobs:
       with:
         path: node_modules
         key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-deps
-    - run: npm i
-    - run: npx mocha --exit -r ts-node/register test/**/*.ts
+    - name: Deps
+      run: npm i
+    - name: Lints
+      run: npm lint
+    - name: Tests
+      run: npx mocha --exit -r ts-node/register test/**/*.ts
 
   package:
     name: Build Docker

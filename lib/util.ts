@@ -5,7 +5,7 @@ import * as util from 'util';
 export function generate_unique_id(length: number) {
 
     // base58 character set. From bitcoin.
-    let CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
     let code = '';
     for (let i = 0; i < length; i++) {
@@ -15,5 +15,5 @@ export function generate_unique_id(length: number) {
 }
 
 export async function sleep(time: number) {
-    await util.promisify(setTimeout)(time)
+    await util.promisify(setTimeout)(time);
 }
