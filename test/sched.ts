@@ -249,7 +249,7 @@ describe('Sched', () => {
 
         await sched.loop();
 
-        await sleep(5);
+        await sleep(10);
 
         // get the job, it should have been marked as a failed segment
         expect(await sched.get_job_failure_count('taskTimeout')).to.be.greaterThan(0);
