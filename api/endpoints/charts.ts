@@ -7,7 +7,6 @@ import * as api_response from '../response';
 
 import { Category, CategoryDao, standard_sort_categories } from '../../lib/dao/categories';
 import { Chart, ChartDao, LineChartData } from '../../lib/dao/charts';
-import { Metric } from '../../lib/dao/metrics';
 import { GameDao } from '../../lib/dao/games';
 import { LeaderboardDao, make_distribution_chart } from '../../lib/dao/leaderboards';
 import { Level, LevelDao } from '../../lib/dao/levels';
