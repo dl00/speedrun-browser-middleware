@@ -98,6 +98,9 @@ export async function apply_games(sched: Sched, cur: CursorData<SRCGame>) {
             return l;
         }));
 
+        delete g.categories;
+        delete g.levels;
+
         for(const groupable of ['genres', 'platforms', 'developers', 'publishers']) {
             const ggg: GameGroup[] = (g as { [key: string]: any })[groupable].data;
 
