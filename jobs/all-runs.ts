@@ -1,10 +1,12 @@
 import * as _ from 'lodash';
 
 import { populate_run_sub_documents, Run, RunDao } from '../lib/dao/runs';
-import { RunTimes, RunSystem } from '../lib/dao/runs/structures';
+import { RunTimes, RunSystem, LeaderboardRunEntry, NewRecord } from '../lib/dao/runs/structures';
 import { UserDao, User } from '../lib/dao/users';
 
 import * as puller from '../lib/puller';
+
+import * as push_notify from '../lib/push-notify';
 
 import { CursorData, Sched } from '../sched/index';
 
@@ -204,7 +206,42 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
         });
 
         if(save_runs.length) {
+
+            // reload from db in order to get computed properties
+            const lbres = await run_dao.load(_.map(runs, 'id')) as LeaderboardRunEntry[];
+
+            // save the runs
             await run_dao.save(save_runs);
+
+            // notify of new records as appropriate
+            const new_records = run_dao.collect_new_records();
+
+            for (const record_run of lbres) {
+                if (!record_run || !record_run.run.game || !record_run.run.category) {
+                    continue;
+                }
+    
+                const onr = new_records.find((r) => r.new_run.run.id === record_run.run.id);
+    
+                const nr: NewRecord = {
+                    new_run: record_run,
+                    old_run: onr ? onr.old_run : record_run
+                };
+    
+                if (record_run.place == 1 && args.length &&  args[0] === 'verified') {
+                    // new record on this category/level, send notification
+                    await push_notify.notify_game_record(nr, record_run.run.game, record_run.run.category, record_run.run.level);
+                }
+    
+                // this should be a personal best. send notification to all attached players who are regular users
+                if(!args.length || args[0] !== 'verified') {
+                    for (const p of record_run.run.players) {
+                        await push_notify.notify_player_record(nr, p as User,
+                            record_run.run.game, record_run.run.category, record_run.run.level);
+                    }
+                }
+            }
+    
         }
     }
 }
