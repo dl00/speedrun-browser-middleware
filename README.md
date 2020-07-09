@@ -39,7 +39,7 @@ Additionally, minimum system requirements:
 * 5GB free disk space for Speedrun.com data
 * Dual core CPU
 
-It takes about 4 hours for the initial sync from Speedrun.com API (as of Jun 2020). This speed is mostly constant due to request limits on the Speedrun.com API.
+It takes about 12-24 hours for the initial sync from Speedrun.com API (as of Jun 2020). This speed is mostly constant due to request limits on the Speedrun.com API.
 
 ### Getting Started
 
