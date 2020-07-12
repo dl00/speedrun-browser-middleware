@@ -221,7 +221,7 @@ export async function get_player_pb_chart(conf: DaoConfig<LeaderboardRunEntry>, 
         .mapValues((v) => {
             return v.data.map((p: LineChartData) => {
                 return {
-                    x: p.x,
+                    x: new Date(p.x).getTime(),
                     y: p.y,
                     obj: run_to_bulk(p.obj),
                 };

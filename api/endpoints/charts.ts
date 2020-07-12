@@ -20,6 +20,7 @@ export function get_wr_chart_longest_holders(wr_chart: Chart): Chart {
     const chart: Chart = {
         item_id: wr_chart.item_id + '_holders',
         item_type: 'users',
+        parent_type: 'leaderboards',
         aggr: 'sum_over_time',
         chart_type: 'list',
         data: {},
@@ -168,7 +169,13 @@ router.get('/leaderboards/:id', async (req, res) => {
     }
 
     // word records chartify
-    const wr_chart = (await chart_dao.load(`runs_min_${leaderboard_id}`))[0];
+    const wr_chart = (await chart_dao.load(`runs_min_${leaderboard_id}`))[0]!;
+
+
+    let longest_holders_chart = null;
+    if(wr_chart) {
+        longest_holders_chart = get_wr_chart_longest_holders(wr_chart);
+    }
 
     // show the run time distributions
     const distrib_chart = make_distribution_chart(leaderboard, category.variables as Variable[]);
@@ -186,6 +193,7 @@ router.get('/leaderboards/:id', async (req, res) => {
         level,
         charts: {
             wrs: wr_chart,
+            longest_holders: longest_holders_chart,
             distribution: distrib_chart,
             volume: volume_chart,
         }

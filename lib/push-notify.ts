@@ -54,12 +54,17 @@ function build_record_notification_data(record: NewRecord, game: Game, category:
     return ret;
 }
 
-export async function notify_game_record(record: NewRecord, game: Game, category: Category, level?: Level|null) {
-    if (!config.pushNotify.enabled) {
-        return false;
-    }
+export async function notify_game_record(record: NewRecord, game: Game, category: Category, level?: Level|null): Promise<boolean> {
 
     const GAME_RECORD_TOPIC = `${config.stackName}_game_${game.id}_${category.id}${level ? '_' + level.id : ''}`;
+    
+    if (!config.pushNotify.enabled) {
+        debug(`notify (dry) ${GAME_RECORD_TOPIC}`);
+        return false;
+    }
+    else {
+        debug(`notify ${GAME_RECORD_TOPIC}`);
+    }
 
     const run_notification_data: RecordNotificationData = build_record_notification_data(record, game, category, level);
     debug(`notify ${GAME_RECORD_TOPIC}`);
@@ -70,20 +75,25 @@ export async function notify_game_record(record: NewRecord, game: Game, category
         });
     } catch (e) {
         debug('failed to send push notification: %O', e);
+        return false;
     }
 
     return true;
 }
 
-export async function notify_player_record(record: NewRecord, player: User, game: Game, category: Category, level?: Level|null) {
-    if (!config.pushNotify.enabled) {
-        return false;
-    }
+export async function notify_player_record(record: NewRecord, player: User, game: Game, category: Category, level?: Level|null): Promise<boolean> {
 
     const PLAYER_RECORD_TOPIC = `${config.stackName}_player_${player.id}`;
 
+    if (!config.pushNotify.enabled) {
+        debug(`notify (dry) ${PLAYER_RECORD_TOPIC}`);
+        return false;
+    }
+    else {
+        debug(`notify ${PLAYER_RECORD_TOPIC}`);
+    }
+
     const run_notification_data: RecordNotificationData = build_record_notification_data(record, game, category, level);
-    debug(`notify ${PLAYER_RECORD_TOPIC}`);
 
     try {
         await fb_admin.messaging().sendToTopic(PLAYER_RECORD_TOPIC, {
@@ -91,5 +101,8 @@ export async function notify_player_record(record: NewRecord, player: User, game
         });
     } catch (e) {
         debug('failed to send push notification %O %O', e, run_notification_data);
+        return false;
     }
+
+    return true;
 }

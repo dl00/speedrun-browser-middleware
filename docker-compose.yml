@@ -3,12 +3,13 @@ version: '3'
 services:
   web:
     image: node:12
+    command: ["npx", "ts-node", "/app/index.ts"]
     ports:
     - "3500:3500"
     volumes:
     - .:/app
     environment:
-      DEBUG: sched
+      DEBUG: sched,push-notify
     network_mode: host
     working_dir: /app
     depends_on:
