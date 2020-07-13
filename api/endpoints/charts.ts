@@ -32,18 +32,19 @@ export function get_wr_chart_longest_holders(wr_chart: Chart): Chart {
         const holders: {[player_id: string]: any} = {};
 
         for (let i = 0; i < wr_chart.data[subcategory].length - 1; i++) {
-            const run = (wr_chart.data[subcategory][i + 1] as LineChartData).obj as Run;
+            const old_run = (wr_chart.data[subcategory][i + 1] as LineChartData).obj as Run;
+            const new_run = (wr_chart.data[subcategory][i]     as LineChartData).obj as Run;
 
-            const dt = run.times.primary_t -
-                (wr_chart.data[subcategory][i] as LineChartData).obj.times.primary_t;
+            const dt = new Date(new_run.date).getTime() -
+                new Date(old_run.date).getTime();
 
-            if (holders[run.players[0].id]) {
-                holders[run.players[0].id].score += dt;
+            if (holders[new_run.players[0].id]) {
+                holders[new_run.players[0].id].score += dt;
             }
             else {
-                holders[run.players[0].id] = {
+                holders[new_run.players[0].id] = {
                     score: dt,
-                    player: run.players[0],
+                    player: new_run.players[0],
                 };
             }
         }
