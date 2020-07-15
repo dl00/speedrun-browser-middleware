@@ -194,9 +194,11 @@ router.get('/leaderboards/:id', async (req, res) => {
         level,
         charts: {
             wrs: wr_chart,
-            longest_holders: longest_holders_chart,
             distribution: distrib_chart,
             volume: volume_chart,
+        },
+        rankings: {
+            longest_holders: longest_holders_chart,
         }
     });
 });
