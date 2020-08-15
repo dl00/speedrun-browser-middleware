@@ -10,6 +10,7 @@ import * as api from '../';
 import * as api_response from '../response';
 
 import Debug from 'debug';
+import { GameDao } from '../../lib/dao/games';
 const debug = Debug('api:runs');
 
 const router = Router();
@@ -74,6 +75,30 @@ router.get('/:ids', async (req, res) => {
         return api_response.complete(res, runs);
     } catch (err) {
         debug('api/runs: could not send runs from list:', err);
+        return api_response.error(res, api_response.err.INTERNAL_ERROR());
+    }
+});
+
+// endpoint to retrieve speedruns awaiting moderation for a moderator
+router.get('new/:mod', async(req, res) => {
+
+    const mod_id = req.params.mod;
+
+    let start = 0;
+    if (req.query.start) {
+        start = parseInt(req.query.start);
+    }
+
+    try {
+        const games = await new GameDao(api.storedb!)
+                .load_for_mod(mod_id);
+    
+        const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
+                .load_new_in_games(_.map(games, 'id'), start);
+
+        return api_response.complete(res, runs);
+    } catch(err) {
+        debug('api/runs: could not send runs from list for mod:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 });

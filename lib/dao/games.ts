@@ -5,7 +5,7 @@ import { Dao, DaoConfig, IndexDriver, IndexerIndex } from './';
 
 import { DB } from '../db';
 
-import { RedisMapIndex } from './backing/redis';
+import { RedisMapIndex, RedisMultiIndex } from './backing/redis';
 
 import { Category } from './categories';
 import { RunDao } from './runs';
@@ -272,6 +272,7 @@ export class GameDao extends Dao<Game> {
         this.indexes = [
             new RedisMapIndex('abbr', 'abbreviation'),
             new RedisMapIndex('twitch_id', 'twitch_id'),
+            new RedisMultiIndex('moderator', 'moderators'),
             new IndexerIndex('games', get_game_search_indexes),
             new PopularGamesIndex('popular_games', max_items),
             new PopularGamesIndex('popular_trending_games', max_items,
@@ -319,6 +320,15 @@ export class GameDao extends Dao<Game> {
         case 'trending':
             idx = 'popular_trending_games';
         }
+
+        return await this.load_by_index(idx, key);
+    }
+
+    // get games which the given id is registered as a moderator for
+    public async load_for_mod(mod_id: string, offset?: number) {
+        const key = `${mod_id}:${offset || 0}`;
+
+        let idx = 'moderator';
 
         return await this.load_by_index(idx, key);
     }

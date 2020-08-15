@@ -153,10 +153,16 @@ export interface RunDaoOptions {
 }
 
 export class RunDao extends Dao<LeaderboardRunEntry> {
+
+    config: RunDaoOptions = {};
+
     constructor(db: DB, config?: RunDaoOptions) {
         super(db, 'runs', 'mongo');
 
         this.id_key = _.property('run.id');
+
+        if(config)
+            this.config = config;
 
         this.massage_sort = {
             'run.game.id': 1,
@@ -327,6 +333,13 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
                 $lt: end
             }
         }, { projection: {_id: true}}).toArray(), '_id');
+    }
+
+    public async load_new_in_games(game_ids: string[], offset: number) {
+        return await this.db.mongo.collection(this.collection).find({
+            'run.game.id': {$in: game_ids},
+            'run.status.status': 'new'
+        }, { sort: { 'run.submitted': 1 }, limit: this.config.max_items || undefined, skip: offset || 0 }).toArray();
     }
 
     public async get_player_count(filter: any) {
