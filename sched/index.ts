@@ -356,7 +356,7 @@ export class Sched extends EventEmitter {
 
         const old_res = await this.get_resource(r.name);
 
-        await this.rdb.hmset(`${RDB_RESOURCES}:${r.name}`, _.assign({
+        await this.rdb.hmset(`${RDB_RESOURCES}:${r.name}`, <any>_.assign({
             lastUseTime: 0
         }, old_res, r));
     }

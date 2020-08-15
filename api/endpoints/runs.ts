@@ -20,12 +20,12 @@ async function get_latest_runs(req: Request, res: Response) {
     const verified = req.query.verified !== 'false';
 
     if (req.query.start) {
-        start = parseInt(req.query.start);
+        start = parseInt(<string>req.query.start);
     }
 
     let end = start + api.config!.api.maxItems - 1;
     if (req.query.count) {
-        end = start + parseInt(req.query.count) - 1;
+        end = start + parseInt(<string>req.query.count) - 1;
     }
 
     if (isNaN(start) || start < 0) {
@@ -38,7 +38,7 @@ async function get_latest_runs(req: Request, res: Response) {
 
     try {
         const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
-            .load_latest_runs(start, req.params.id || req.query.id, verified);
+            .load_latest_runs(start, <string>req.params.id || <string>req.query.id, verified);
 
         return api_response.complete(res, runs, {
             code: (end + 1).toString(),
@@ -86,15 +86,15 @@ router.get('new/:mod', async(req, res) => {
 
     let start = 0;
     if (req.query.start) {
-        start = parseInt(req.query.start);
+        start = parseInt(<string>req.query.start);
     }
 
     try {
         const games = await new GameDao(api.storedb!)
-                .load_for_mod(mod_id);
+            .load_for_mod(mod_id);
     
         const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
-                .load_new_in_games(_.map(games, 'id'), start);
+            .load_new_in_games(_.map(games, 'id'), start);
 
         return api_response.complete(res, runs);
     } catch(err) {

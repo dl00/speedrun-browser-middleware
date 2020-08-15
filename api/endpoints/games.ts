@@ -18,17 +18,17 @@ async function get_popular_games(req: Request, res: Response) {
     let start = 0;
 
     if (req.query.start) {
-        start = parseInt(req.query.start);
+        start = parseInt(<string>req.query.start);
     }
 
     let end = start + api.config!.api.maxItems - 1;
     if (req.query.count) {
-        end = start + parseInt(req.query.count) - 1;
+        end = start + parseInt(<string>req.query.count) - 1;
     }
 
     let mode = 'popular';
     if (req.query.mode) {
-        mode = req.query.mode;
+        mode = <string>req.query.mode;
     }
 
     if (isNaN(start) || start < 0) {
@@ -108,12 +108,12 @@ router.get('moderator/:id', async(req, res) => {
 
     let start = 0;
     if (req.query.start) {
-        start = parseInt(req.query.start);
+        start = parseInt(<string>req.query.start);
     }
 
     try {
         const games = await new GameDao(api.storedb!, { max_items: api.config!.api.maxItems })
-                .load_for_mod(mod_id, start);
+            .load_for_mod(mod_id, start);
 
         return api_response.complete(res, games);
     } catch(err) {

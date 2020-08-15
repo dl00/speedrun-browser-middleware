@@ -18,7 +18,7 @@ async function get_game_group_streams(req: Request, res: Response) {
     let start = 0;
 
     if (req.query.start) {
-        start = parseInt(req.query.start);
+        start = parseInt(<string>req.query.start);
     }
 
     if(!gg_id || gg_id === 'site')
