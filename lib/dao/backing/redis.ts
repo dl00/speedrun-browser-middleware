@@ -141,7 +141,14 @@ export class RedisMultiIndex<T> implements IndexDriver<T> {
 
         for (const obj of objs) {
             const key = _.isFunction(this.key_by) ? this.key_by(obj) : _.get(obj, this.key_by);
-            m.srem(`${conf.collection}:${this.name}:${key}`, conf.id_key(obj));
+            if(key.length) {
+                for(const v of key) {
+                    m.srem(`${conf.collection}:${this.name}:${v}`, conf.id_key(obj));
+                }
+            }
+            else {
+                m.srem(`${conf.collection}:${this.name}:${key}`, conf.id_key(obj));
+            }
         }
 
         await m.exec();
@@ -149,10 +156,10 @@ export class RedisMultiIndex<T> implements IndexDriver<T> {
 
     public has_changed(old_obj: T, new_obj: T): boolean {
         if (_.isString(this.key_by)) {
-            return _.get(old_obj, this.key_by) != _.get(new_obj, this.key_by);
+            return _.isEqual(_.get(old_obj, this.key_by), _.get(new_obj, this.key_by));
         }
         else {
-            return this.key_by(old_obj) != this.key_by(new_obj);
+            return _.isEqual(this.key_by(old_obj), this.key_by(new_obj));
         }
     }
 }
