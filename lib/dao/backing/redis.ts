@@ -97,9 +97,9 @@ export class RedisMapIndex<T> implements IndexDriver<T> {
 
 export class RedisMultiIndex<T> implements IndexDriver<T> {
     public name: string;
-    public key_by: ((obj: T) => string)|string;
+    public key_by: ((obj: T) => string|string[])|string;
 
-    constructor(name: string, key_by: ((obj: T) => string)|string) {
+    constructor(name: string, key_by: ((obj: T) => string|string[])|string) {
         this.name = name;
         this.key_by = key_by;
     }
@@ -123,7 +123,14 @@ export class RedisMultiIndex<T> implements IndexDriver<T> {
 
         for (const obj of objs) {
             const key = _.isFunction(this.key_by) ? this.key_by(obj) : _.get(obj, this.key_by);
-            m.sadd(`${conf.collection}:${this.name}:${key}`, conf.id_key(obj));
+            if(key.length) {
+                for(const v of key) {
+                    m.sadd(`${conf.collection}:${this.name}:${v}`, conf.id_key(obj));
+                }
+            }
+            else {
+                m.sadd(`${conf.collection}:${this.name}:${key}`, conf.id_key(obj));
+            }
         }
 
         await m.exec();

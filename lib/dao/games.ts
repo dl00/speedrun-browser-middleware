@@ -68,6 +68,9 @@ export interface Game extends BulkGame, BaseMiddleware {
     romhack?: boolean;
     created: string;
     assets: GameAssets;
+
+    moderators?: {[id: string]: string};
+
     score?: number;
 
     categories?: Category[];
@@ -272,7 +275,7 @@ export class GameDao extends Dao<Game> {
         this.indexes = [
             new RedisMapIndex('abbr', 'abbreviation'),
             new RedisMapIndex('twitch_id', 'twitch_id'),
-            new RedisMultiIndex('moderator', 'moderators'),
+            new RedisMultiIndex('moderator', g => _.keys(g.moderators)),
             new IndexerIndex('games', get_game_search_indexes),
             new PopularGamesIndex('popular_games', max_items),
             new PopularGamesIndex('popular_trending_games', max_items,
