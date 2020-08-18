@@ -193,18 +193,18 @@ export const DEFAULT_CONFIG: Config = {
                     timeout: 60000
                 }
             },
-            #'charts_game_groups': {
-            #    interval: 24 * 60 * 60 * 1000,
-            #    job: {
-            #        name: 'charts_game_groups',
-            #        resources: ['local'],
-            #        generator: 'generate_game_group_charts',
-            #        task: 'apply_game_group_charts',
-            #        args: [],
-            #        blockedBy: ['init_games'],
-            #        timeout: 2 * 60 * 60 * 1000 // charts can sometimes take a very long time to generate
-            #    }
-            #},
+            //'charts_game_groups': {
+            //    interval: 24 * 60 * 60 * 1000,
+            //    job: {
+            //       name: 'charts_game_groups',
+            //       resources: ['local'],
+            //       generator: 'generate_game_group_charts',
+            //       task: 'apply_game_group_charts',
+            //       args: [],
+            //       blockedBy: ['init_games'],
+            //       timeout: 2 * 60 * 60 * 1000 // charts can sometimes take a very long time to generate
+            //   }
+            //},
             'twitch_games': {
                 interval: 24 * 60 * 60 * 1000,
                 job: {
