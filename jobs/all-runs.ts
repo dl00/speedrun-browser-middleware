@@ -223,6 +223,10 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
                     record_run.new_run = lbres.find(r => record_run.new_run.run.id == r.run.id)!;
 
+                    // sometimes the run cant be saved
+                    if(!record_run.new_run)
+                        continue;
+
                     if (record_run.new_run.place == 1 && args.length &&  args[0] === 'verified') {
                         // new record on this category/level, send notification
                         await push_notify.notify_game_record(record_run, record_run.new_run.run.game, record_run.new_run.run.category, record_run.new_run.run.level);
