@@ -30,6 +30,7 @@ const MIN_BACKOFF = 1000;
 const MAX_BACKOFF = 5 * 60 * 1000;
 
 const MAX_CONCURRENT = 1;
+const MAX_FAILED_JOB_SEGMENTS = 20;
 
 const RUNNING_WAIT = 10 * 1000; // 10 seconds
 
@@ -340,7 +341,10 @@ export class Sched extends EventEmitter {
     }
     
     private async push_failed_segment(job: GenericJob, seg: CursorData<any>): Promise<void> {
-        await this.rdb.rpush(`${RDB_FAILED_SEGMENTS}:${job.name}`, JSON.stringify(seg));
+        const m = this.rdb.multi();
+        m.rpush(`${RDB_FAILED_SEGMENTS}:${job.name}`, JSON.stringify(seg));
+        m.ltrim(`${RDB_FAILED_SEGMENTS}:${job.name}`, 0, MAX_FAILED_JOB_SEGMENTS);
+        await m.exec();
     }
     
     private async pop_failed_segment(job: GenericJob): Promise<CursorData<any>|null> {
@@ -621,9 +625,17 @@ export class Sched extends EventEmitter {
     }
   
     async exec() {
-        this.server = http.createServer((req, res) => {
+        this.server = http.createServer(async (req, res) => {
             if(req.url === '/') {
-                return res.end('OK');
+                try {
+                    // check redis connection
+                    await this.rdb.info();
+                    return res.end('OK');
+                }
+                catch(err) {
+                    res.statusCode = 500;
+                    return res.end(`fail: ${err}`);
+                }
             }
 
             // add metrics here later
