@@ -215,9 +215,11 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
             if(new_records.length) {
                 // reload from db in order to get computed properties
-                const lbres = await run_dao.load(_.map(new_records, 'new_run.run.id')) as LeaderboardRunEntry[];
+                const lbres = _.remove(await run_dao.load(_.map(new_records, 'new_run.run.id')) as LeaderboardRunEntry[], _.isNil);
 
                 for (const record_run of new_records) {
+
+                    debug('read new record %O, %O', record_run, lbres);
 
                     record_run.new_run = lbres.find(r => record_run.new_run.run.id == r.run.id)!;
 
