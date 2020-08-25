@@ -229,14 +229,14 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
                     if (record_run.new_run.place == 1 && args.length &&  args[0] === 'verified') {
                         // new record on this category/level, send notification
-                        await push_notify.notify_game_record(record_run, record_run.new_run.run.game, record_run.new_run.run.category, record_run.new_run.run.level);
+                        await push_notify.notify_game_record(_.cloneDeep(record_run), _.cloneDeep(record_run.new_run.run.game), _.cloneDeep(record_run.new_run.run.category), _.cloneDeep(record_run.new_run.run.level));
                     }
         
                     // this should be a personal best. send notification to all attached players who are regular users
                     if(!args.length || args[0] !== 'verified') {
                         for (const p of record_run.new_run.run.players) {
-                            await push_notify.notify_player_record(record_run, p as User,
-                                record_run.new_run.run.game, record_run.new_run.run.category, record_run.new_run.run.level);
+                            await push_notify.notify_player_record(_.cloneDeep(record_run), p as User,
+                                _.cloneDeep(record_run.new_run.run.game), _.cloneDeep(record_run.new_run.run.category), _.cloneDeep(record_run.new_run.run.level));
                         }
                     }
                 }
