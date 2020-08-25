@@ -219,9 +219,9 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
                 for (const record_run of new_records) {
 
-                    debug('read new record %O, %O', record_run, lbres);
-
                     record_run.new_run = lbres.find(r => record_run.new_run.run.id == r.run.id)!;
+
+                    debug('read new record %O, %O', record_run);
 
                     // sometimes the run cant be saved
                     if(!record_run.new_run)
