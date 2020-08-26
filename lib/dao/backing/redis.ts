@@ -124,7 +124,7 @@ export class RedisMultiIndex<T> implements IndexDriver<T> {
         for (const obj of objs) {
             const key = _.isFunction(this.key_by) ? this.key_by(obj) : _.get(obj, this.key_by);
             if(key) {
-                if(key.length) {
+                if(_.isArray(key)) {
                     for(const v of key) {
                         m.sadd(`${conf.collection}:${this.name}:${v}`, conf.id_key(obj));
                     }
@@ -144,7 +144,7 @@ export class RedisMultiIndex<T> implements IndexDriver<T> {
         for (const obj of objs) {
             const key = _.isFunction(this.key_by) ? this.key_by(obj) : _.get(obj, this.key_by);
             if(key) {
-                if(key.length) {
+                if(_.isArray(key)) {
                     for(const v of key) {
                         m.srem(`${conf.collection}:${this.name}:${v}`, conf.id_key(obj));
                     }
