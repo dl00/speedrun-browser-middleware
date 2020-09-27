@@ -53,6 +53,30 @@ async function get_latest_runs(req: Request, res: Response) {
 router.get('/latest/genre/:id', (req, res) => get_latest_runs(req, res));
 router.get('/latest', (req, res) => get_latest_runs(req, res));
 
+// endpoint to retrieve speedruns awaiting moderation for a moderator
+router.get('new/:mod', async(req, res) => {
+
+    const mod_id = req.params.mod;
+
+    let start = 0;
+    if (req.query.start) {
+        start = parseInt(<string>req.query.start);
+    }
+
+    try {
+        const games = await new GameDao(api.storedb!)
+            .load_for_mod(mod_id);
+    
+        const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
+            .load_new_in_games(_.map(games, 'id'), start);
+
+        return api_response.complete(res, runs);
+    } catch(err) {
+        debug('api/runs: could not send runs from list for mod:', err);
+        return api_response.error(res, api_response.err.INTERNAL_ERROR());
+    }
+});
+
 // retrieve one or more runs by id
 router.get('/:ids', async (req, res) => {
     const ids = req.params.ids.split(',');
@@ -75,30 +99,6 @@ router.get('/:ids', async (req, res) => {
         return api_response.complete(res, runs);
     } catch (err) {
         debug('api/runs: could not send runs from list:', err);
-        return api_response.error(res, api_response.err.INTERNAL_ERROR());
-    }
-});
-
-// endpoint to retrieve speedruns awaiting moderation for a moderator
-router.get('new/:mod', async(req, res) => {
-
-    const mod_id = req.params.mod;
-
-    let start = 0;
-    if (req.query.start) {
-        start = parseInt(<string>req.query.start);
-    }
-
-    try {
-        const games = await new GameDao(api.storedb!)
-            .load_for_mod(mod_id);
-    
-        const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
-            .load_new_in_games(_.map(games, 'id'), start);
-
-        return api_response.complete(res, runs);
-    } catch(err) {
-        debug('api/runs: could not send runs from list for mod:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }
 });
