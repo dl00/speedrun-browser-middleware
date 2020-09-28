@@ -335,11 +335,22 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         }, { projection: {_id: true}}).toArray(), '_id');
     }
 
-    public async load_new_in_games(game_ids: string[], offset: number) {
-        return await this.db.mongo.collection(this.collection).find({
+    public async load_new_in_games(game_ids: string[], offset?: string) {
+
+        const cond: any = {
             'run.game.id': {$in: game_ids},
             'run.status.status': 'new'
-        }, { sort: { 'run.submitted': 1 }, limit: this.config.max_items || undefined, skip: offset || 0 }).toArray();
+        };
+
+        if(offset) {
+            const afterRun = await this.load(offset);
+
+            if(afterRun[0]) {
+                cond['run.submitted'] = {$gt: afterRun[0].run.submitted };
+            }
+        }
+
+        return await this.db.mongo.collection(this.collection).find(cond, { sort: { 'run.submitted': 1 }, limit: this.config.max_items || undefined }).toArray();
     }
 
     public async get_player_count(filter: any) {

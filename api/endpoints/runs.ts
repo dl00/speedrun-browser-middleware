@@ -54,14 +54,11 @@ router.get('/latest/genre/:id', (req, res) => get_latest_runs(req, res));
 router.get('/latest', (req, res) => get_latest_runs(req, res));
 
 // endpoint to retrieve speedruns awaiting moderation for a moderator
-router.get('new/:mod', async(req, res) => {
+router.get('/new/:mod', async(req, res) => {
 
     const mod_id = req.params.mod;
 
-    let start = 0;
-    if (req.query.start) {
-        start = parseInt(<string>req.query.start);
-    }
+    const start = <string|undefined>req.query.start;
 
     try {
         const games = await new GameDao(api.storedb!)
