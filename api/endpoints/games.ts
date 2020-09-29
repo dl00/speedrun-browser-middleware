@@ -106,14 +106,9 @@ router.get('moderator/:id', async(req, res) => {
 
     const mod_id = req.params.id;
 
-    let start = 0;
-    if (req.query.start) {
-        start = parseInt(<string>req.query.start);
-    }
-
     try {
         const games = await new GameDao(api.storedb!, { max_items: api.config!.api.maxItems })
-            .load_for_mod(mod_id, start);
+            .load_for_mod(mod_id);
 
         return api_response.complete(res, games);
     } catch(err) {
