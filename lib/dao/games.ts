@@ -328,9 +328,8 @@ export class GameDao extends Dao<Game> {
     }
 
     // get games which the given id is registered as a moderator for
-    public async load_for_mod(mod_id: string, offset?: number) {
-        const key = `${mod_id}:${offset || 0}`;
-        return await this.load_by_index('moderator', key);
+    public async load_for_mod(mod_id: string) {
+        return await this.load_by_index('moderator', mod_id);
     }
 
     public async get_game_group_count(gg_id: string[]): Promise<number[]> {
