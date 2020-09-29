@@ -63,6 +63,8 @@ router.get('/new/:mod', async(req, res) => {
     try {
         const games = await new GameDao(api.storedb!)
             .load_for_mod(mod_id);
+
+        console.log('loaded', games, 'for', mod_id);
     
         const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
             .load_new_in_games(_.map(games, 'id'), start);
