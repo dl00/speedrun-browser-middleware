@@ -337,10 +337,10 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
 
         return _.map(await this.db.mongo.collection(this.collection).find({
             'run.submitted': {
-                $gt: start,
-                $lt: end
+                $gte: start,
+                $lte: end
             }
-        }, { projection: {_id: true}}).toArray(), '_id');
+        }).project({_id: true}).toArray(), '_id');
     }
 
     public async load_new_in_games(game_ids: string[], offset?: string) {
