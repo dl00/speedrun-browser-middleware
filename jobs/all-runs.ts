@@ -165,7 +165,7 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
             const dbRunIds = await run_dao.load_submitted_segment_ids(early_time, late_time);
 
-            const newIds = _.map(runs, 'id')
+            const newIds = _.map(runs, 'id');
             
             debug('ok %d %d', newIds.length, dbRunIds.length);
 
