@@ -327,6 +327,14 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
 
     // used to compare elements seen on local vs. src to delete extra runs
     public async load_submitted_segment_ids(start: string, end: string): Promise<string[]> {
+
+        if(!start || !end)
+            throw new Error('start or end submitted date not specified for segment ids');
+        
+        if(start > end) {
+            throw new Error('start is greater than end');
+        }
+
         return _.map(await this.db.mongo.collection(this.collection).find({
             'run.submitted': {
                 $gt: start,

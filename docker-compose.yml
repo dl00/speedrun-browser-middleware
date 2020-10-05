@@ -9,7 +9,7 @@ services:
     volumes:
     - .:/app
     environment:
-      DEBUG: sched,push-notify
+      DEBUG: sched,push-notify,jobs:all-runs
     network_mode: host
     working_dir: /app
     depends_on:

@@ -155,16 +155,19 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
         const run_dao = new RunDao(sched.storedb!);
 
-        if(args.indexOf('deletes') != -1) {
+        if(_.indexOf(args, 'deletes') != -1) {
             // delete runs not seen in this continuous segment
             // its not perfect if runs are between segments, but over time runs should be deleted well enough
-            const early_time = runs[0].submitted;
-            const late_time = _.last(runs)!.submitted;
+            const early_time = _.last(runs)!.submitted;
+            const late_time = runs[0].submitted;
+
+            debug('load segment ids %s to %s', early_time, late_time);
 
             const dbRunIds = await run_dao.load_submitted_segment_ids(early_time, late_time);
 
-            //const oldIds = _.map(dbRuns, 'run.id');
-            const newIds = _.map(runs, 'id');
+            const newIds = _.map(runs, 'id')
+            
+            debug('ok %d %d', newIds.length, dbRunIds.length);
 
             const toRemove = _.difference(dbRunIds, newIds);
             if (toRemove.length) {
@@ -224,7 +227,7 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
 
                     record_run.new_run = lbres.find(r => record_run.new_run.run.id == r.run.id)!;
 
-                    debug('read new record %O, %O', record_run);
+                    //debug('read new record %O, %O', record_run);
 
                     // sometimes the run cant be saved
                     if(!record_run.new_run)
@@ -238,6 +241,9 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
                     // this should be a personal best. send notification to all attached players who are regular users
                     if(!args.length || args[0] !== 'verified') {
                         for (const p of record_run.new_run.run.players) {
+                            if(!p.id)
+                                continue; // cannot notify if there is no src account
+
                             await push_notify.notify_player_record(_.cloneDeep(record_run), p as User,
                                 _.cloneDeep(record_run.new_run.run.game), _.cloneDeep(record_run.new_run.run.category), _.cloneDeep(record_run.new_run.run.level));
                         }
