@@ -337,8 +337,8 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
 
         return _.map(await this.db.mongo.collection(this.collection).find({
             'run.submitted': {
-                $gte: start,
-                $lte: end
+                $gt: start,
+                $lt: end
             }
         }).project({_id: true}).toArray(), '_id');
     }
