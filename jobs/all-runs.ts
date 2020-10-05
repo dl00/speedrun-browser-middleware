@@ -159,7 +159,7 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
             // delete runs not seen in this continuous segment
             // its not perfect if runs are between segments, but over time runs should be deleted well enough
             const early_time = runs[0].submitted;
-            const late_time = runs[0].submitted;
+            const late_time = _.last(runs)!.submitted;
 
             const dbRuns = await run_dao.load_submitted_segment_ids(early_time, late_time);
 

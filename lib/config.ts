@@ -158,7 +158,7 @@ export const DEFAULT_CONFIG: Config = {
                 }
             },
             'runs': {
-                interval: 14 * 7 * 60 * 60 * 1000,
+                interval: 2 * 24 * 60 * 60 * 1000,
                 job: {
                     name: 'runs',
                     resources: ['src', 'local'],
