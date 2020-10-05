@@ -161,13 +161,16 @@ export async function apply_runs(sched: Sched, cur: CursorData<SRCRun>, args: st
             const early_time = runs[0].submitted;
             const late_time = _.last(runs)!.submitted;
 
-            const dbRuns = await run_dao.load_submitted_segment_ids(early_time, late_time);
+            const dbRunIds = await run_dao.load_submitted_segment_ids(early_time, late_time);
 
-            const oldIds = _.map(dbRuns, 'run.id');
+            //const oldIds = _.map(dbRuns, 'run.id');
             const newIds = _.map(runs, 'id');
 
-            const toRemove = _.difference(oldIds, newIds);
+            const toRemove = _.difference(dbRunIds, newIds);
             if (toRemove.length) {
+
+                debug('removing runs: %O', toRemove);
+
                 await run_dao.remove(toRemove);
             }
         }
