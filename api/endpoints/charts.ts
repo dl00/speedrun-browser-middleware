@@ -38,13 +38,13 @@ export function get_wr_chart_longest_holders(wr_chart: Chart): Chart {
             const dt = (new Date(new_run.date).getTime() -
                 new Date(old_run.date).getTime()) / 1000;
 
-            if (holders[new_run.players[0].id]) {
-                holders[new_run.players[0].id].score += dt;
+            if (holders[old_run.players[0].id]) {
+                holders[old_run.players[0].id].score += dt;
             }
             else {
-                holders[new_run.players[0].id] = {
+                holders[old_run.players[0].id] = {
                     score: dt,
-                    obj: new_run.players[0],
+                    obj: old_run.players[0],
                 };
             }
         }
