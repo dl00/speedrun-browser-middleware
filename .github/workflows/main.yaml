@@ -48,7 +48,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Set Environment
-      run: echo "::set-env name=TAG::$(printf "%06d" $GITHUB_RUN_NUMBER)-$(git rev-parse HEAD)"
+      run: echo "TAG=$(printf %06d $GITHUB_RUN_NUMBER)-$(git rev-parse HEAD)" >> $GITHUB_ENV
     - name: Build Docker
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
