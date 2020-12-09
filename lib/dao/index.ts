@@ -30,6 +30,8 @@ export interface DaoConfig<T> {
 
     save(objs: T|T[]): Promise<void>;
     load(ids: string|string[], options?: any): Promise<any[]>;
+
+    add_computed(objs: (T|null)[]): Promise<void>;
 }
 
 export interface IndexDriver<T> {
@@ -170,16 +172,21 @@ export class Dao<T> implements DaoConfig<T> {
         const objs = await require(`./backing/${this.backing}`).load(this, ids);
 
         if (!options.skipComputed) {
-            for (const prop in this.computed) {
-                await Promise.all(_.map(objs, async (obj: any) => {
-                    if (obj) {
-                        _.set(obj, prop, await this.computed[prop](obj));
-                    }
-                }));
-            }
+            await this.add_computed(objs);
         }
 
         return objs;
+    }
+
+    public async add_computed(objs: (T|null)[]) {
+
+        for (const prop in this.computed) {
+            await Promise.all(_.map(objs, async (obj: any) => {
+                if (obj) {
+                    _.set(obj, prop, await this.computed[prop](obj));
+                }
+            }));
+        }
     }
 
     public async remove(ids: string|string[]): Promise<Array<T|null>> {

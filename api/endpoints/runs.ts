@@ -18,6 +18,7 @@ const router = Router();
 async function get_latest_runs(req: Request, res: Response) {
     let start = 0;
     const verified = req.query.verified !== 'false';
+    const list_name = <string>req.query.list;
 
     if (req.query.start) {
         start = parseInt(<string>req.query.start);
@@ -37,8 +38,16 @@ async function get_latest_runs(req: Request, res: Response) {
     }
 
     try {
-        const runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
-            .load_latest_runs(start, <string>req.params.id || <string>req.query.id, verified);
+        let runs;
+        if(list_name) {
+            runs =  await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
+                .load_latest_runs(start, <string>req.params.id || <string>req.query.id, list_name);
+        }
+        else {
+            // compatibility
+            runs = await new RunDao(api.storedb!, { max_items: api.config!.api.maxItems })
+                .load_latest_runs(start, <string>req.params.id || <string>req.query.id, verified ? 'latest_verified_runs' : 'latest_new_runs');
+        }
 
         return api_response.complete(res, runs, {
             code: (end + 1).toString(),

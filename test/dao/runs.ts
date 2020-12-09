@@ -151,6 +151,10 @@ describe('RunDao', () => {
 
         expect(runs[0]!.run).to.have.property('id', 'yet_another_run');
         expect(runs[1]!.run).to.have.property('id', 'another_run');
+
+        runs = await run_dao.load_latest_runs(0, '', 'latest_wr_runs');
+
+        expect(runs[0]!.run).to.have.property('id', 'one_run');
     });
 
     it('should compute place property', async () => {

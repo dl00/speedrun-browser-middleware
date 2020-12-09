@@ -234,6 +234,10 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         this.computed = {
             place: async (lbr: LeaderboardRunEntry) => {
 
+                if(lbr.place) {
+                    return lbr.place;
+                }
+                
                 if (lbr.obsolete || !lbr.run || !lbr.run.game || !lbr.run.game.id || !lbr.run.category || !lbr.run.category.id) {
                     return null;
                 }
@@ -278,6 +282,11 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
                 config && config.latest_runs_history_length ? config.latest_runs_history_length : 1000,
                 config && config.max_items ? config.max_items : 100,
             ),
+            new RecentRunsIndex('latest_wr_runs', 'status.verify-date', LATEST_VERIFIED_RUNS_KEY,
+                config && config.latest_runs_history_length ? config.latest_runs_history_length : 1000,
+                config && config.max_items ? config.max_items : 100,
+                { 'place': 1 }
+            ),
             new SupportingStructuresIndex('supporting_structures'),
             new RecordChartIndex('chart_wrs'),
         ];
@@ -320,9 +329,9 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         return (this.indexes.find((ind) => ind.name === 'supporting_structures') as SupportingStructuresIndex).new_records;
     }
 
-    public async load_latest_runs(offset?: number, ggId?: string, verified = true) {
+    public async load_latest_runs(offset?: number, ggId?: string, list_name: string = 'latest_verified_runs') {
         const key = `${ggId || ''}:${offset || 0}`;
-        return await this.load_by_index(verified ? 'latest_verified_runs' : 'latest_new_runs', key);
+        return await this.load_by_index(list_name, key);
     }
 
     // used to compare elements seen on local vs. src to delete extra runs

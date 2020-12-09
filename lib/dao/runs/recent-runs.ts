@@ -18,12 +18,16 @@ export class RecentRunsIndex implements IndexDriver<LeaderboardRunEntry> {
     private keep_count: number;
     private max_return: number;
 
-    constructor(name: string, date_property: string, redis_key: string, keep_count: number, max_return: number) {
+    private filter: any|null;
+
+    constructor(name: string, date_property: string, redis_key: string, keep_count: number, max_return: number, filter: any|null = null) {
         this.name = name;
         this.date_property = date_property;
         this.redis_key = redis_key;
         this.keep_count = keep_count;
         this.max_return = max_return;
+
+        this.filter = filter;
     }
 
     public async load(conf: DaoConfig<LeaderboardRunEntry>, keys: string[]): Promise<Array<LeaderboardRunEntry|null>> {
@@ -52,12 +56,23 @@ export class RecentRunsIndex implements IndexDriver<LeaderboardRunEntry> {
 
         const m = conf.db.redis.multi();
 
-        for (const lbr of objs) {
+        // need computed property
+        await conf.add_computed(objs);
+
+        main: for (const lbr of objs) {
 
             if (lbr.run.times.primary_t <= 0.01) {
                 // ensure these "dummy" runs are never added
                 m.zrem(this.redis_key, lbr.run.id);
                 continue;
+            }
+
+            // skip over run if filter does not match
+            if(this.filter) {
+                for(let k in this.filter) {
+                    if(_.get(lbr, k) != this.filter[k])
+                        continue main;
+                }
             }
 
             const date_score = moment(_.get(lbr.run as Run, this.date_property) || 0).unix().toString();
