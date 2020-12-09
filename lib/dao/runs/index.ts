@@ -146,6 +146,7 @@ export async function populate_run_sub_documents(db: DB, runs: Run[]): Promise<P
 
 export const LATEST_VERIFIED_RUNS_KEY = 'verified_runs';
 export const LATEST_NEW_RUNS_KEY = 'latest_new_runs';
+export const LATEST_WR_RUNS_KEY = 'latest_wr_runs';
 
 export interface RunDaoOptions {
     latest_runs_history_length?: number;
@@ -282,7 +283,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
                 config && config.latest_runs_history_length ? config.latest_runs_history_length : 1000,
                 config && config.max_items ? config.max_items : 100,
             ),
-            new RecentRunsIndex('latest_wr_runs', 'status.verify-date', LATEST_VERIFIED_RUNS_KEY,
+            new RecentRunsIndex('latest_wr_runs', 'status.verify-date', LATEST_WR_RUNS_KEY,
                 config && config.latest_runs_history_length ? config.latest_runs_history_length : 1000,
                 config && config.max_items ? config.max_items : 100,
                 { 'place': 1 }
