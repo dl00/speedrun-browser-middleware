@@ -69,7 +69,7 @@ export class RecentRunsIndex implements IndexDriver<LeaderboardRunEntry> {
 
             // skip over run if filter does not match
             if(this.filter) {
-                for(let k in this.filter) {
+                for(const k in this.filter) {
                     if(_.get(lbr, k) != this.filter[k])
                         continue main;
                 }

@@ -329,7 +329,7 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         return (this.indexes.find((ind) => ind.name === 'supporting_structures') as SupportingStructuresIndex).new_records;
     }
 
-    public async load_latest_runs(offset?: number, ggId?: string, list_name: string = 'latest_verified_runs') {
+    public async load_latest_runs(offset?: number, ggId?: string, list_name = 'latest_verified_runs') {
         const key = `${ggId || ''}:${offset || 0}`;
         return await this.load_by_index(list_name, key);
     }
