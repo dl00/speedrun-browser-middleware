@@ -2,6 +2,7 @@ import * as allRuns from './all-runs';
 import * as charts from './charts';
 import * as gamelist from './gamelist';
 import * as twitch from './twitch';
+import * as cleanFailed from './clean-failed';
 import { CursorData, Sched } from '../sched';
 
 export function make_generators(): { [key: string]: (sched: Sched, pos: CursorData<any>|null, args: string[]) => Promise<CursorData<any>|null> } {
@@ -16,7 +17,9 @@ export function make_generators(): { [key: string]: (sched: Sched, pos: CursorDa
     
         'generate_twitch_games': twitch.generate_twitch_games,
         'generate_all_twitch_streams': twitch.generate_all_twitch_streams,
-        'generate_running_twitch_streams': twitch.generate_running_twitch_streams
+        'generate_running_twitch_streams': twitch.generate_running_twitch_streams,
+
+        'generate_clean_failed_segments': cleanFailed.generate_clean_failed_segments
     };
 }
 
@@ -26,6 +29,8 @@ export function make_tasks(): { [key: string]: (sched: Sched, data: CursorData<a
         'apply_games': gamelist.apply_games,
         'apply_game_group_charts': charts.apply_game_group_charts,
         'apply_twitch_games': twitch.apply_twitch_games,
-        'apply_twitch_streams': twitch.apply_twitch_streams
+        'apply_twitch_streams': twitch.apply_twitch_streams,
+
+        'apply_clean_failed_segments': cleanFailed.apply_clean_failed_segments
     };
 }

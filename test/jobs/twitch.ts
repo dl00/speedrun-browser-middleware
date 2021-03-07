@@ -74,7 +74,6 @@ describe('jobs/twitch', () => {
 
         const testUser: User = {
             'id': 'mytest',
-            bests: {},
             'names': {
                 'international': 'Someone',
                 'japanese': null

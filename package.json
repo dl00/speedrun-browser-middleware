@@ -25,7 +25,7 @@
     "@types/mongodb": "^3.5.25",
     "@types/node": "^10.17.28",
     "express": "^4.17.1",
-    "firebase-admin": "^8.13.0",
+    "firebase-admin": "^9.5.0",
     "got": "^11.5.2",
     "ioredis": "^4.17.3",
     "lodash": "^4.17.20",

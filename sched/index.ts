@@ -355,6 +355,10 @@ export class Sched extends EventEmitter {
     
         return null;
     }
+
+    async clean_failed_segments(job: string): Promise<void> {
+        await this.rdb.del(`${RDB_FAILED_SEGMENTS}:${job}`);
+    }
     
     private async set_resource(r: InitResource): Promise<void> {
 
@@ -442,6 +446,10 @@ export class Sched extends EventEmitter {
 
     async has_job(name: string): Promise<boolean> {
         return !!(await this.get_job(name)) || !!(await this.rdb.exists(`${RDB_JOB_RUN_LOG}:${name}`));
+    }
+
+    get_scheduled_jobs(): ScheduledJob[] {
+        return _.values(this.config.jobs);
     }
     
     /** perform a single iteration of executing jobs. may spawn tasks which continue in the background. */
@@ -590,7 +598,7 @@ export class Sched extends EventEmitter {
     
         const now = Date.now();
     
-        for (const job of _.values(this.config.jobs)) {
+        for (const job of this.get_scheduled_jobs()) {
 
             debug('eval %O', job);
 

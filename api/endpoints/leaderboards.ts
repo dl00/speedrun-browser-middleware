@@ -26,6 +26,20 @@ router.get('/:ids', async (req, res) => {
 
         return api_response.complete(res, leaderboards);
     } catch (err) {
+        debug('api/leaderboards: could not send leaderboard:', err);
+        return api_response.error(res, api_response.err.INTERNAL_ERROR());
+    }
+});
+
+// new api to return runs from a single leaderboard, only the first positions
+router.get('/:id/runs', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const lbrs = await new LeaderboardDao(api.storedb!).load_runs(id, req.query.startAfter?.toString());
+
+        return api_response.complete(res, lbrs);
+    } catch (err) {
         debug('api/leaderboards: could not send runs from list:', err);
         return api_response.error(res, api_response.err.INTERNAL_ERROR());
     }

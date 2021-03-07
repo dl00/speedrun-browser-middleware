@@ -65,7 +65,6 @@ describe('jobs/all-runs', () => {
             'data': [
                 {
                     'id': 'a_player',
-                    bests: {},
                     'names': {
                         'international': 'Someone',
                         'japanese': null

@@ -24,7 +24,7 @@ export interface Leaderboard extends BaseMiddleware {
     'video-only'?: boolean;
     runs: LeaderboardRunEntry[];
 
-    players: {[id: string]: User}|{data: User[]};
+    players?: {[id: string]: User}|{data: User[]};
 }
 
 // leaderboards can have subcategories. correct the places returned by the speedrun
@@ -153,6 +153,24 @@ export class LeaderboardDao extends Dao<Leaderboard> {
         this.indexes = [
             new MongoMultiIndex('game', 'game'),
         ];
+    }
+
+    // special method to load 
+    async load_runs(id: string, startAfter?: string, maxItems = 100) {
+
+        return await this.db.mongo.collection(this.collection).aggregate([
+            {
+                $match: { _id: id }
+            },
+            {
+                $project: {
+                    runs: { $slice: ['$runs', {$add: [{ $indexOfArray: ['$runs.run.id', startAfter ] }, 1]}, maxItems] },
+                }
+            },
+            {
+                $unwind: '$runs'
+            }
+        ]).toArray();
     }
 
     protected async pre_store_transform(leaderboard: Leaderboard): Promise<Leaderboard> {

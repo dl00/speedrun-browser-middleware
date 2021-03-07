@@ -589,6 +589,23 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         };
     }
 
+    public async get_player_pbs(player_id: string, includeObsolete = false, lastSubmitted = '', limit?: number): Promise<LeaderboardRunEntry[]> {
+        const filter: any = {
+            'run.players.id': player_id,
+            'run.submitted': {$gt: lastSubmitted}
+        };
+
+        if(!includeObsolete)
+            filter.obsolete = false;
+
+        return await this.db.mongo.collection(this.collection).find(filter)
+            .sort({
+                'run.submitted': -1,
+            })
+            .limit(limit || this.config.max_items || 50)
+            .toArray();
+    }
+
     public async get_player_pb_chart(player_id: string, game_id: string) {
         return await get_player_pb_chart(this, player_id, game_id);
     }

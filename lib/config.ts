@@ -240,6 +240,18 @@ export const DEFAULT_CONFIG: Config = {
                     blockedBy: ['init_games'],
                     timeout: 20000
                 }
+            },
+            'clean_failed_segments': {
+                interval: 24 * 60 * 60 * 1000,
+                job: {
+                    name: 'clean_failed_segments',
+                    resources: [],
+                    generator: 'generate_clean_failed_segments',
+                    task: 'apply_clean_failed_segments',
+                    args: [],
+                    blockedBy: [],
+                    timeout: 5000
+                }
             }
         }
     },

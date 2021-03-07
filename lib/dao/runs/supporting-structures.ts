@@ -6,7 +6,6 @@ import { DaoConfig, IndexDriver } from '../';
 import { BulkCategory, Category, CategoryDao } from '../categories';
 import { correct_leaderboard_run_places, Leaderboard, LeaderboardDao } from '../leaderboards';
 import { BulkLevel } from '../levels';
-import { UserDao } from '../users';
 import { LeaderboardRunEntry, NewRecord, Run, RunDao } from './';
 
 import { Variable } from '../../speedrun-api';
@@ -149,10 +148,6 @@ export class SupportingStructuresIndex implements IndexDriver<LeaderboardRunEntr
         }
     }
 
-    public async update_player_pbs(conf: DaoConfig<LeaderboardRunEntry>, runs: LeaderboardRunEntry[], _categories: {[key: string]: Category|null}) {
-        this.new_records.push(...await new UserDao(conf.db).apply_runs(runs));
-    }
-
     public async update_obsoletes(conf: DaoConfig<LeaderboardRunEntry>, runs: LeaderboardRunEntry[], categories: {[key: string]: Category|null}) {
 
 
@@ -245,10 +240,7 @@ export class SupportingStructuresIndex implements IndexDriver<LeaderboardRunEntr
         const not_obsolete_runs = await this.update_obsoletes(conf, runs, categories);
 
         if(not_obsolete_runs.length) {
-            await Promise.all([
-                this.update_leaderboard(conf, _.cloneDeep(not_obsolete_runs), categories),
-                this.update_player_pbs(conf, _.cloneDeep(not_obsolete_runs), categories),
-            ]);
+            await this.update_leaderboard(conf, _.cloneDeep(not_obsolete_runs), categories);
         }
     }
 

@@ -10,7 +10,7 @@ import { Category, category_to_bulk } from '../lib/dao/categories';
 import { Game, game_to_bulk } from '../lib/dao/games';
 import { Level, level_to_bulk } from '../lib/dao/levels';
 import { NewRecord, Run, run_to_bulk } from '../lib/dao/runs';
-import { User } from '../lib/dao/users';
+import { User } from './dao/users';
 
 import Debug from 'debug';
 const debug = Debug('push-notify');

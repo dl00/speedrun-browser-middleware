@@ -13,10 +13,10 @@ import { RedisMapIndex } from './backing/redis';
 import { game_assets_to_bulk } from './games';
 import { NewRecord } from './runs';
 
-import { BulkGameAssets, GameDao } from './games';
+import { BulkGameAssets } from './games';
 import { LeaderboardRunEntry, Run, run_to_bulk, RunDao } from './runs';
 
-import { Dao, IndexerIndex } from './';
+import { Dao, IndexerIndex } from '.';
 
 export interface GamePersonalBests {
     id: string;
@@ -76,8 +76,6 @@ export interface User extends BulkUser, BaseMiddleware {
     speedrunslive?: { uri: string } | null;
     location?: any | null;
     hitbox?: any | null;
-
-    bests: {[id: string]: GamePersonalBests};
 }
 
 export function user_to_bulk(user: User) {
@@ -184,36 +182,9 @@ export function normalize_user(d: User) {
 
 export class UserDao extends Dao<User> {
     constructor(db: DB) {
-        super(db, 'users', 'redis');
+        super(db, 'users', 'mongo');
 
         this.id_key = _.property('id');
-
-        this.computed = {
-            /// TODO: simplify this
-            bests: async (user) => {
-
-                const run_dao = new RunDao(this.db!);
-
-                await Promise.all(_.map(user.bests, async (bg: GamePersonalBests) => {
-                    await Promise.all(_.map(bg.categories, async (bc: CategoryPersonalBests) => {
-                        if (bc.run) {
-                            const run = (await run_dao.load(bc.run.run.id))[0];
-                            bc.run.place = run ? run.place : null;
-                        } else if (bc.levels) {
-                            const ids = _.map(bc.levels, 'run.run.id');
-                            const runs = _.zipObject(ids, await run_dao.load(ids));
-
-                            for (const id in bc.levels) {
-                                const run = runs[bc.levels[id].run.run.id];
-                                bc.levels[id].run.place = run ? run.place : null;
-                            }
-                        }
-                    }));
-                }));
-
-                return user.bests;
-            },
-        };
 
         this.indexes = [
             new RedisMapIndex('abbr', (v: User) => {
@@ -228,43 +199,6 @@ export class UserDao extends Dao<User> {
         ];
     }
 
-    public async apply_runs(runs: LeaderboardRunEntry[]): Promise<NewRecord[]> {
-        const player_ids = _.chain(runs)
-            .map((v) => _.map(v.run.players, 'id'))
-            .flatten()
-            .reject(_.isNil)
-            .uniq()
-            .value();
-
-        if (!player_ids.length) {
-            return [];
-        } // nothing to do
-
-        const players = _.keyBy(
-            _.filter(await this.load(player_ids, {skipComputed: true}), 'id'),
-            'id') as {[id: string]: User};
-
-        if (!_.keys(players).length) {
-            return []; // still nothing
-        }
-
-        const new_records: Array<NewRecord|null> = [];
-
-        for (const run of runs) {
-            for (const player of run.run.players) {
-                // can only notify for non-guests (with ID)
-                if (player.id) {
-                    new_records.push(
-                        apply_personal_best(players[player.id], run));
-                }
-            }
-        }
-
-        await this.save(_.values(players));
-
-        return _.reject(new_records, _.isNil) as NewRecord[];
-    }
-
     protected async pre_store_transform(user: User): Promise<User> {
         normalize_user(user);
 
@@ -277,32 +211,19 @@ export class UserDao extends Dao<User> {
         // look at personal bests for each game.
         // we want to find the score of the game and multiply it by a standing score
 
-        if(!_.keys(player.bests).length)
+        const playerBests = await new RunDao(this.db).get_player_pbs(player.id, false, '', 100);
+
+        if(!_.keys(playerBests).length)
             return 0;
 
         let score = 0;
 
-        const games = await new GameDao(this.db).load(_.keys(player.bests));
+        // cheap method for computing player score based on amount of time since last submission
+        for(const lbr of playerBests) {
 
-        for(const game of games) {
-            if(!game)
-                continue;
+            const submittedDate = new Date(lbr.run.submitted);
 
-            const game_score = Math.max(1, game.score || 1);
-
-            const pbg = player.bests[game.id];
-            for(const category_id in pbg.categories) {
-                const pbc = pbg.categories[category_id];
-
-                if(pbc.run) {
-                    score += game_score / (pbc.run.place || 100);
-                }
-                else if(pbc.levels) {
-                    for(const level_id in pbc.levels)
-                        score += game_score / _.keys(pbc.levels).length /
-                            (pbc.levels[level_id].run.place || 100);
-                }
-            }
+            score += 30 / (Date.now() - submittedDate.getTime());
         }
 
         return score;
