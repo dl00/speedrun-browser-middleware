@@ -169,6 +169,9 @@ export class LeaderboardDao extends Dao<Leaderboard> {
             },
             {
                 $unwind: '$runs'
+            },
+            {
+                $replaceRoot: { newRoot: '$runs' }
             }
         ]).toArray();
     }
