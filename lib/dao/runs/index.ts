@@ -598,12 +598,16 @@ export class RunDao extends Dao<LeaderboardRunEntry> {
         if(!includeObsolete)
             filter.obsolete = false;
 
-        return await this.db.mongo.collection(this.collection).find(filter)
+        const runs = await this.db.mongo.collection(this.collection).find(filter)
             .sort({
                 'run.submitted': -1,
             })
             .limit(limit || this.config.max_items || 50)
             .toArray();
+
+        await this.add_computed(runs);
+
+        return runs;
     }
 
     public async get_player_pb_chart(player_id: string, game_id: string) {
