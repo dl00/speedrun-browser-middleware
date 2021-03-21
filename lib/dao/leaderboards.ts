@@ -156,7 +156,15 @@ export class LeaderboardDao extends Dao<Leaderboard> {
     }
 
     // special method to load 
-    async load_runs(id: string, startAfter?: string, maxItems = 100) {
+    async load_runs(id: string, startAfter?: string, filter?: {[subcat: string]: string}, maxItems = 100) {
+
+        const variablesCond: any = {$and: []};
+
+        if(filter) {
+            for(const subcat_id in filter) {
+                variablesCond.$and.push({$eq: ['$$lbr.run.values.' + subcat_id, filter[subcat_id]]});
+            }
+        }
 
         return await this.db.mongo.collection(this.collection).aggregate([
             {
@@ -164,7 +172,10 @@ export class LeaderboardDao extends Dao<Leaderboard> {
             },
             {
                 $project: {
-                    runs: { $slice: ['$runs', {$add: [{ $indexOfArray: ['$runs.run.id', startAfter ] }, 1]}, maxItems] },
+                    runs: { $slice: [
+                        {$filter: {input: '$runs', as: 'lbr', cond: variablesCond}}, 
+                        {$add: [{ $indexOfArray: ['$runs.run.id', startAfter ] }, 1]}, maxItems]
+                    },
                 }
             },
             {

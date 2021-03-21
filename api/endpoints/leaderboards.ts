@@ -36,7 +36,15 @@ router.get('/:id/runs', async (req, res) => {
     const id = req.params.id;
 
     try {
-        const lbrs = await new LeaderboardDao(api.storedb!).load_runs(id, req.query.startAfter?.toString());
+
+        const filters: any = {};
+        for(const f in req.query) {
+            if(f.startsWith('var_')) {
+                filters[f.substr(4)] = req.query[f];
+            }
+        }
+
+        const lbrs = await new LeaderboardDao(api.storedb!).load_runs(id, req.query.startAfter?.toString(), filters);
 
         return api_response.complete(res, lbrs);
     } catch (err) {
