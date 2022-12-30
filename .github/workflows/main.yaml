@@ -50,7 +50,7 @@ jobs:
     - name: Set Environment
       run: echo "TAG=$(printf %06d $GITHUB_RUN_NUMBER)-$(git rev-parse HEAD)" >> $GITHUB_ENV
     - name: Build Docker
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: dcr.dbeal.dev/beald/speedrun-browser
         registry: dcr.dbeal.dev
